@@ -30,7 +30,6 @@ table.table-chart-highlight {
   width: 100% !important;
   height: 100% !important;
   background: rgba(0, 0, 0, 0.6) !important;
-  backdrop-filter: blur(3px) !important;
 }
 
 /* Modal container */

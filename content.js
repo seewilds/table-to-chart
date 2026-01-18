@@ -570,7 +570,7 @@
             </div>
           </div>
           <div class="table-chart-series-row">
-            <span id="table-chart-series-label">Series:</span>
+            <span id="table-chart-series-label" class="toolbar-label">Series:</span>
             <select id="table-chart-series" multiple size="4"></select>
             <span class="table-chart-series-hint">Ctrl/Cmd to multi-select</span>
           </div>
