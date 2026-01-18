@@ -174,10 +174,20 @@ function updateInfo() {
   const infoText = document.querySelector('.table-chart-info-text');
   if (!TC.parsedData || !infoText) return;
 
-  const metaTitle = TC.parsedData.columnMetadata.title;
-  const metaInfo = metaTitle ? `<strong>${metaTitle}</strong> | ` : '';
+  // Clear existing content
+  infoText.textContent = '';
 
-  infoText.innerHTML = `${metaInfo}${TC.parsedData.rowLabels.length} rows × ${TC.parsedData.dataColumnHeaders.length} columns`;
+  const metaTitle = TC.parsedData.columnMetadata.title;
+  if (metaTitle) {
+    const strong = document.createElement('strong');
+    strong.textContent = metaTitle;
+    infoText.appendChild(strong);
+    infoText.appendChild(document.createTextNode(' | '));
+  }
+
+  infoText.appendChild(document.createTextNode(
+    `${TC.parsedData.rowLabels.length} rows × ${TC.parsedData.dataColumnHeaders.length} columns`
+  ));
 }
 
 // Populate series selector based on current view mode
