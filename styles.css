@@ -129,16 +129,8 @@ table.table-chart-highlight {
   background: white !important;
 }
 
-.table-chart-controls label {
+.btn-group {
   display: flex !important;
-  align-items: center !important;
-  gap: 4px !important;
-  cursor: pointer !important;
-}
-
-.table-chart-controls input[type="checkbox"] {
-  cursor: pointer !important;
-  accent-color: #4285f4 !important;
 }
 
 .toggle-btn {
@@ -147,21 +139,35 @@ table.table-chart-highlight {
   background: white !important;
   font-size: 14px !important;
   cursor: pointer !important;
+  margin: 0 !important;
 }
 
-.toggle-btn:first-of-type {
+.toggle-btn:first-child {
   border-radius: 4px 0 0 4px !important;
-  border-right: none !important;
 }
 
-.toggle-btn:last-of-type {
+.toggle-btn:last-child {
   border-radius: 0 4px 4px 0 !important;
+  border-left: none !important;
+}
+
+.toggle-btn:only-child {
+  border-radius: 4px !important;
+  border-left: 1px solid #ccc !important;
+}
+
+.toggle-btn:hover {
+  background: #f0f0f0 !important;
 }
 
 .toggle-btn.active {
   background: #4285f4 !important;
   color: white !important;
   border-color: #4285f4 !important;
+}
+
+.toggle-btn.active:hover {
+  background: #3b78e7 !important;
 }
 
 /* Series row */
@@ -255,13 +261,14 @@ table.table-chart-highlight {
     color: #ccc !important;
   }
 
+  .toggle-btn:hover {
+    background: #4d4d4d !important;
+  }
+
   .toggle-btn.active {
     background: #2d5aa0 !important;
     color: white !important;
-  }
-
-  .table-chart-controls label {
-    color: #e0e0e0 !important;
+    border-color: #2d5aa0 !important;
   }
 }
 

@@ -549,12 +549,16 @@
             </div>
             <div class="toolbar-group">
               <span class="toolbar-label">View:</span>
-              <button id="table-chart-view-columns" class="toggle-btn active">Columns</button>
-              <button id="table-chart-view-rows" class="toggle-btn">Rows</button>
+              <div class="btn-group">
+                <button id="table-chart-view-columns" class="toggle-btn active">Columns</button>
+                <button id="table-chart-view-rows" class="toggle-btn">Rows</button>
+              </div>
             </div>
             <div class="toolbar-group">
-              <label><input type="checkbox" id="table-chart-horizontal"> Horizontal</label>
-              <label><input type="checkbox" id="table-chart-stacked"> Stacked</label>
+              <div class="btn-group">
+                <button id="table-chart-horizontal" class="toggle-btn">Horizontal</button>
+                <button id="table-chart-stacked" class="toggle-btn">Stacked</button>
+              </div>
             </div>
           </div>
           <div class="table-chart-series-row">
@@ -576,14 +580,19 @@
     modal.querySelector('.table-chart-overlay').addEventListener('click', closeModal);
     modal.querySelector('#table-chart-type').addEventListener('change', updateChart);
     modal.querySelector('#table-chart-series').addEventListener('change', updateChart);
-    modal.querySelector('#table-chart-horizontal').addEventListener('change', updateChart);
-    modal.querySelector('#table-chart-stacked').addEventListener('change', updateChart);
 
-    // View mode toggle
+    // Toggle buttons
     modal.querySelector('#table-chart-view-columns').addEventListener('click', () => setViewMode('columns'));
     modal.querySelector('#table-chart-view-rows').addEventListener('click', () => setViewMode('rows'));
+    modal.querySelector('#table-chart-horizontal').addEventListener('click', toggleOption);
+    modal.querySelector('#table-chart-stacked').addEventListener('click', toggleOption);
 
     return modal;
+  }
+
+  function toggleOption(e) {
+    e.target.classList.toggle('active');
+    updateChart();
   }
 
   function setViewMode(mode) {
@@ -702,8 +711,8 @@
     if (!view || view.series.length === 0) return;
 
     const chartType = document.getElementById('table-chart-type').value;
-    const horizontal = document.getElementById('table-chart-horizontal').checked;
-    const stacked = document.getElementById('table-chart-stacked').checked;
+    const horizontal = document.getElementById('table-chart-horizontal').classList.contains('active');
+    const stacked = document.getElementById('table-chart-stacked').classList.contains('active');
     let selectedIndices = getSelectedSeries();
 
     if (selectedIndices.length === 0) {
