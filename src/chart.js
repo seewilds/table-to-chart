@@ -257,8 +257,6 @@ function updateChart() {
   let chartTitle = view.title || '';
   if (!chartTitle && selectedSeries.length <= 3) {
     chartTitle = selectedSeries.map(s => s.displayName || s.name).join(', ');
-  } else if (!chartTitle) {
-    chartTitle = `${selectedSeries.length} series selected`;
   }
 
   const chartConfig = {
