@@ -65,18 +65,15 @@ function handleMouseEnter(e) {
 
 function handleMouseLeave(e) {
   // Only handle when chart mode is enabled
-  if (!chartModeEnabled) return;
+  if (!chartModeEnabled || !currentHighlightedTable) return;
 
-  const table = e.target;
-  if (table.tagName === 'TABLE') {
-    // Check if we're actually leaving the table (not entering a child)
-    const relatedTarget = e.relatedTarget;
-    if (!relatedTarget || !table.contains(relatedTarget)) {
-      table.classList.remove('table-chart-highlight');
-      if (currentHighlightedTable === table) {
-        currentHighlightedTable = null;
-      }
-    }
+  // Check if we're leaving the highlighted table
+  const relatedTarget = e.relatedTarget;
+  const leavingTable = !relatedTarget || !currentHighlightedTable.contains(relatedTarget);
+
+  if (leavingTable) {
+    currentHighlightedTable.classList.remove('table-chart-highlight');
+    currentHighlightedTable = null;
   }
 }
 

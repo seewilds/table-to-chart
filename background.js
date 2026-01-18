@@ -1,7 +1,32 @@
 // Background service worker - manages chart mode toggle per tab
 
-// Track enabled state per tab
-const tabStates = new Map();
+// Scripts and styles to inject
+const SCRIPTS = [
+  'chart.min.js',
+  'src/namespace.js',
+  'src/dedup.js',
+  'src/parser.js',
+  'src/chart.js',
+  'src/ui.js',
+  'src/main.js'
+];
+const STYLES = ['styles.css'];
+
+// Get tab state from storage
+async function getTabState(tabId) {
+  const result = await chrome.storage.session.get(`tab_${tabId}`);
+  return result[`tab_${tabId}`] || false;
+}
+
+// Set tab state in storage
+async function setTabState(tabId, enabled) {
+  await chrome.storage.session.set({ [`tab_${tabId}`]: enabled });
+}
+
+// Remove tab state from storage
+async function removeTabState(tabId) {
+  await chrome.storage.session.remove(`tab_${tabId}`);
+}
 
 // Create icon with green outline
 async function createOutlinedIcon(size) {
@@ -50,36 +75,88 @@ async function updateActionButton(tabId, enabled) {
   }
 }
 
+// Check if scripts are already injected in a tab
+async function isInjected(tabId) {
+  try {
+    const results = await chrome.scripting.executeScript({
+      target: { tabId },
+      func: () => typeof window.TableChart !== 'undefined'
+    });
+    return results[0]?.result === true;
+  } catch (e) {
+    return false;
+  }
+}
+
+// Inject content scripts and styles
+async function injectScripts(tabId) {
+  // Check if already injected
+  if (await isInjected(tabId)) {
+    // Just enable chart mode
+    await chrome.tabs.sendMessage(tabId, { type: 'chartModeChanged', enabled: true });
+    return;
+  }
+
+  try {
+    // Inject CSS first
+    await chrome.scripting.insertCSS({
+      target: { tabId },
+      files: STYLES
+    });
+
+    // Inject JS files in order
+    await chrome.scripting.executeScript({
+      target: { tabId },
+      files: SCRIPTS
+    });
+
+    // Enable chart mode after injection
+    await chrome.tabs.sendMessage(tabId, { type: 'chartModeChanged', enabled: true });
+  } catch (e) {
+    console.error('Failed to inject scripts:', e);
+  }
+}
+
+// Disable chart mode (scripts stay injected but inactive)
+async function disableChartMode(tabId) {
+  try {
+    await chrome.tabs.sendMessage(tabId, { type: 'chartModeChanged', enabled: false });
+  } catch (e) {
+    // Content script not loaded, nothing to disable
+  }
+}
+
 // Handle toolbar button click
 chrome.action.onClicked.addListener(async (tab) => {
-  const currentState = tabStates.get(tab.id) || false;
+  const currentState = await getTabState(tab.id);
   const newState = !currentState;
-  tabStates.set(tab.id, newState);
-
+  await setTabState(tab.id, newState);
   await updateActionButton(tab.id, newState);
 
-  // Notify content script of state change
-  try {
-    await chrome.tabs.sendMessage(tab.id, {
-      type: 'chartModeChanged',
-      enabled: newState
-    });
-  } catch (e) {
-    // Content script may not be loaded yet
-    console.log('Could not send message to tab:', e.message);
+  if (newState) {
+    await injectScripts(tab.id);
+  } else {
+    await disableChartMode(tab.id);
   }
 });
 
 // Clean up when tab is closed
 chrome.tabs.onRemoved.addListener((tabId) => {
-  tabStates.delete(tabId);
+  removeTabState(tabId);
+});
+
+// Restore icon state when tab is activated (handles service worker suspension)
+chrome.tabs.onActivated.addListener(async ({ tabId }) => {
+  const enabled = await getTabState(tabId);
+  await updateActionButton(tabId, enabled);
 });
 
 // Handle content script requesting current state
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   if (message.type === 'getChartModeState' && sender.tab) {
-    const enabled = tabStates.get(sender.tab.id) || false;
-    sendResponse({ enabled });
+    getTabState(sender.tab.id).then(enabled => {
+      sendResponse({ enabled });
+    });
+    return true; // Keep channel open for async response
   }
-  return true;
 });
