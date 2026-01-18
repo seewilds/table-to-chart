@@ -260,7 +260,9 @@ function updateChart() {
     chartTitle = selectedSeries.map(s => s.displayName || s.name).join(', ');
   }
   if (!chartTitle && TC.parsedData) {
-    chartTitle = `${TC.parsedData.rowLabels.length} rows × ${TC.parsedData.dataColumnHeaders.length} columns`;
+    const metaTitle = TC.parsedData.columnMetadata && TC.parsedData.columnMetadata.title;
+    const sizeText = `${TC.parsedData.rowLabels.length} rows × ${TC.parsedData.dataColumnHeaders.length} columns`;
+    chartTitle = metaTitle ? `${metaTitle} | ${sizeText}` : sizeText;
   }
 
   const chartConfig = {
