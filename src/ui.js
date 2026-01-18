@@ -44,6 +44,17 @@ function createModal() {
             </div>
           </div>
           <div class="toolbar-group">
+            <span class="toolbar-label">Palette:</span>
+            <select id="table-chart-palette">
+              <option value="default">Default</option>
+              <option value="pastel">Pastel</option>
+              <option value="bold">Bold</option>
+              <option value="monochrome">Monochrome</option>
+              <option value="cyberpunk">Cyberpunk</option>
+              <option value="forest">Forest</option>
+            </select>
+          </div>
+          <div class="toolbar-group">
             <span id="table-chart-series-label" class="toolbar-label">Series:</span>
             <select id="table-chart-series" multiple size="4"></select>
           </div>
@@ -62,6 +73,7 @@ function createModal() {
   TC.modal.querySelector('.table-chart-close').addEventListener('click', closeModal);
   TC.modal.querySelector('.table-chart-overlay').addEventListener('click', closeModal);
   TC.modal.querySelector('#table-chart-type').addEventListener('change', updateChart);
+  TC.modal.querySelector('#table-chart-palette').addEventListener('change', updateChart);
   TC.modal.querySelector('#table-chart-series').addEventListener('change', updateChart);
   TC.modal.querySelector('#table-chart-label-column').addEventListener('change', onLabelColumnChange);
 

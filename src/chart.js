@@ -1,6 +1,35 @@
 // Chart Module - Chart rendering and updates
 // Depends on: namespace.js
 
+// Color palette definitions
+const COLOR_PALETTES = {
+  default: [
+    [54, 162, 235], [255, 99, 132], [75, 192, 192], [255, 206, 86],
+    [153, 102, 255], [255, 159, 64], [199, 199, 199], [83, 102, 255],
+    [255, 99, 255], [99, 255, 132], [255, 182, 193], [0, 128, 128], [255, 215, 0]
+  ],
+  pastel: [
+    [174, 198, 207], [255, 179, 186], [186, 225, 200], [255, 223, 186],
+    [203, 195, 227], [255, 218, 185], [176, 224, 230], [221, 160, 221]
+  ],
+  bold: [
+    [220, 20, 60], [0, 100, 0], [25, 25, 112], [255, 140, 0],
+    [128, 0, 128], [0, 128, 128], [139, 69, 19], [75, 0, 130]
+  ],
+  monochrome: [
+    [40, 40, 40], [80, 80, 80], [120, 120, 120], [160, 160, 160],
+    [200, 200, 200], [60, 60, 60], [100, 100, 100], [140, 140, 140]
+  ],
+  cyberpunk: [
+    [255, 0, 255], [0, 255, 255], [255, 0, 128], [128, 0, 255],
+    [0, 255, 128], [255, 255, 0], [255, 64, 64], [0, 128, 255]
+  ],
+  forest: [
+    [34, 139, 34], [107, 142, 35], [85, 107, 47], [46, 139, 87],
+    [60, 179, 113], [143, 188, 143], [154, 205, 50], [102, 51, 0]
+  ]
+};
+
 // Build row labels from a specific column
 function buildRowLabelsForColumn(labelColIndex) {
   if (!TC.parsedData) return [];
@@ -136,22 +165,8 @@ function getCurrentView() {
 }
 
 // Generate colors for chart
-function generateColors(count, alpha = 0.8) {
-  const baseColors = [
-    [54, 162, 235],
-    [255, 99, 132],
-    [75, 192, 192],
-    [255, 206, 86],
-    [153, 102, 255],
-    [255, 159, 64],
-    [199, 199, 199],
-    [83, 102, 255],
-    [255, 99, 255],
-    [99, 255, 132],
-    [255, 182, 193],
-    [0, 128, 128],
-    [255, 215, 0]
-  ];
+function generateColors(count, alpha = 0.8, paletteName = 'default') {
+  const baseColors = COLOR_PALETTES[paletteName] || COLOR_PALETTES.default;
 
   const result = [];
   for (let i = 0; i < count; i++) {
@@ -169,6 +184,7 @@ function updateChart() {
   const chartType = document.getElementById('table-chart-type').value;
   const horizontal = document.getElementById('table-chart-horizontal').classList.contains('active');
   const stacked = document.getElementById('table-chart-stacked').classList.contains('active');
+  const palette = document.getElementById('table-chart-palette').value;
   let selectedIndices = TC.getSelectedSeries();
 
   if (selectedIndices.length === 0) {
@@ -209,11 +225,11 @@ function updateChart() {
         ? validData.map(d => d.value)
         : series.data,
       backgroundColor: isPieType
-        ? generateColors(validData.length, 0.8)
-        : generateColors(selectedSeries.length, 0.8)[idx],
+        ? generateColors(validData.length, 0.8, palette)
+        : generateColors(selectedSeries.length, 0.8, palette)[idx],
       borderColor: isPieType
-        ? generateColors(validData.length, 1)
-        : generateColors(selectedSeries.length, 1)[idx],
+        ? generateColors(validData.length, 1, palette)
+        : generateColors(selectedSeries.length, 1, palette)[idx],
       borderWidth: isPieType ? 2 : 2,
       fill: chartType === 'line' ? false : undefined,
       tension: chartType === 'line' ? 0.1 : undefined
