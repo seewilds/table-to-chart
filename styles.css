@@ -101,6 +101,7 @@ table.table-chart-highlight {
 
 .table-chart-control-row {
   display: flex !important;
+  justify-content: center !important;
   gap: 28px !important;
   align-items: center !important;
   flex-wrap: wrap !important;
