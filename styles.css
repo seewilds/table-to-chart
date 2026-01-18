@@ -101,8 +101,8 @@ table.table-chart-highlight {
 
 .table-chart-control-row {
   display: flex !important;
-  gap: 20px !important;
-  align-items: flex-start !important;
+  gap: 28px !important;
+  align-items: center !important;
   flex-wrap: wrap !important;
   margin-bottom: 12px !important;
 }
@@ -164,6 +164,13 @@ table.table-chart-highlight {
   display: flex !important;
   align-items: center !important;
   gap: 10px !important;
+}
+
+/* Checkbox group */
+.table-chart-checkboxes {
+  display: flex !important;
+  align-items: center !important;
+  gap: 16px !important;
 }
 
 .table-chart-view-label {

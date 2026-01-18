@@ -558,14 +558,16 @@
                 </button>
               </div>
             </div>
-            <label>
-              <input type="checkbox" id="table-chart-horizontal">
-              Horizontal
-            </label>
-            <label>
-              <input type="checkbox" id="table-chart-stacked">
-              Stacked
-            </label>
+            <div class="table-chart-checkboxes">
+              <label>
+                <input type="checkbox" id="table-chart-horizontal">
+                Horizontal
+              </label>
+              <label>
+                <input type="checkbox" id="table-chart-stacked">
+                Stacked
+              </label>
+            </div>
           </div>
           <div class="table-chart-control-row">
             <label>
