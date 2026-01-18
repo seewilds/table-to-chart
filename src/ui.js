@@ -66,6 +66,9 @@ function createModal() {
             <span class="toolbar-label">Categories:</span>
             <select id="table-chart-rows" multiple size="4"></select>
           </div>
+          <div class="toolbar-group" id="table-chart-advanced-toggle-group">
+            <button id="table-chart-advanced-toggle" class="toggle-btn">Advanced</button>
+          </div>
           <div class="toolbar-group" id="table-chart-label-group">
             <span class="toolbar-label">Label column:</span>
             <select id="table-chart-label-column"></select>
@@ -87,12 +90,15 @@ function createModal() {
   TC.modal.querySelector('#table-chart-label-column').addEventListener('change', onLabelColumnChange);
   TC.modal.querySelector('#table-chart-save').addEventListener('click', saveChart);
   TC.modal.querySelector('#table-chart-copy').addEventListener('click', copyChart);
+  TC.modal.querySelector('#table-chart-advanced-toggle').addEventListener('click', toggleAdvanced);
 
   // Toggle buttons
   TC.modal.querySelector('#table-chart-view-columns').addEventListener('click', () => setViewMode('columns'));
   TC.modal.querySelector('#table-chart-view-rows').addEventListener('click', () => setViewMode('rows'));
   TC.modal.querySelector('#table-chart-horizontal').addEventListener('click', toggleOption);
   TC.modal.querySelector('#table-chart-stacked').addEventListener('click', toggleOption);
+
+  setAdvancedVisible(false);
 
   // Drag functionality
   const infoBar = TC.modal.querySelector('.table-chart-info');
@@ -127,6 +133,19 @@ function createModal() {
   });
 
   return TC.modal;
+}
+
+function toggleAdvanced() {
+  setAdvancedVisible(!TC.showAdvanced);
+}
+
+function setAdvancedVisible(isVisible) {
+  TC.showAdvanced = isVisible;
+  const labelGroup = document.getElementById('table-chart-label-group');
+  const toggleButton = document.getElementById('table-chart-advanced-toggle');
+  if (!labelGroup || !toggleButton) return;
+  labelGroup.style.setProperty('display', isVisible ? 'flex' : 'none', 'important');
+  toggleButton.classList.toggle('active', isVisible);
 }
 
 function toggleOption(e) {
@@ -210,6 +229,7 @@ async function copyChart() {
 
 function showModal() {
   createModal();
+  setAdvancedVisible(Boolean(TC.showAdvanced));
   TC.modal.classList.add('active');
 }
 

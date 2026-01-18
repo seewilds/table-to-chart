@@ -167,16 +167,20 @@ table.table-chart-highlight {
   margin: 0 !important;
 }
 
-.toggle-btn:first-child {
+.toolbar-group > .toggle-btn {
+  border-radius: 4px !important;
+}
+
+.btn-group .toggle-btn:first-child {
   border-radius: 4px 0 0 4px !important;
 }
 
-.toggle-btn:last-child {
+.btn-group .toggle-btn:last-child {
   border-radius: 0 4px 4px 0 !important;
   border-left: none !important;
 }
 
-.toggle-btn:only-child {
+.btn-group .toggle-btn:only-child {
   border-radius: 4px !important;
   border-left: 1px solid #ccc !important;
 }
@@ -189,6 +193,7 @@ table.table-chart-highlight {
   background: #4285f4 !important;
   color: white !important;
   border-color: #4285f4 !important;
+  border-left-color: #4285f4 !important;
 }
 
 .toggle-btn.active:hover {
