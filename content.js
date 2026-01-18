@@ -4,7 +4,12 @@
   let modal = null;
   let chartInstance = null;
   let parsedData = null;
-  let viewMode = 'columns'; // 'columns' = column headers as series, 'rows' = row labels as series
+  let viewMode = 'columns';
+
+  // Drag state
+  let isDragging = false;
+  let dragOffsetX = 0;
+  let dragOffsetY = 0; // 'columns' = column headers as series, 'rows' = row labels as series
 
   // ============================================================
   // INTELLIGENT TABLE PARSER
@@ -586,6 +591,38 @@
     modal.querySelector('#table-chart-view-rows').addEventListener('click', () => setViewMode('rows'));
     modal.querySelector('#table-chart-horizontal').addEventListener('click', toggleOption);
     modal.querySelector('#table-chart-stacked').addEventListener('click', toggleOption);
+
+    // Drag functionality
+    const header = modal.querySelector('.table-chart-header');
+    const container = modal.querySelector('.table-chart-container');
+
+    header.addEventListener('mousedown', (e) => {
+      if (e.target.closest('.table-chart-close')) return;
+      isDragging = true;
+      const rect = container.getBoundingClientRect();
+      dragOffsetX = e.clientX - rect.left;
+      dragOffsetY = e.clientY - rect.top;
+      container.classList.add('dragging');
+      // Set initial position with !important to override stylesheet
+      container.style.setProperty('left', rect.left + 'px', 'important');
+      container.style.setProperty('top', rect.top + 'px', 'important');
+      container.style.setProperty('transform', 'none', 'important');
+    });
+
+    document.addEventListener('mousemove', (e) => {
+      if (!isDragging) return;
+      const x = e.clientX - dragOffsetX;
+      const y = e.clientY - dragOffsetY;
+      container.style.setProperty('left', x + 'px', 'important');
+      container.style.setProperty('top', y + 'px', 'important');
+    });
+
+    document.addEventListener('mouseup', () => {
+      if (isDragging) {
+        isDragging = false;
+        container.classList.remove('dragging');
+      }
+    });
 
     return modal;
   }

@@ -58,6 +58,12 @@ table.table-chart-highlight {
   padding: 16px 20px !important;
   background: linear-gradient(135deg, #4285f4, #34a853) !important;
   color: white !important;
+  cursor: grab !important;
+  user-select: none !important;
+}
+
+.table-chart-container.dragging .table-chart-header {
+  cursor: grabbing !important;
 }
 
 .table-chart-header h3 {
