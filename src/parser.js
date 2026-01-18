@@ -375,8 +375,62 @@ class TableParser {
       columnTypes[0] = 'label';
     }
 
+    const leadingLabelCount = this.detectLeadingLabelColumns(colCount);
+    if (leadingLabelCount > this.labelColumnCount) {
+      this.labelColumnCount = leadingLabelCount;
+      for (let i = 0; i < this.labelColumnCount; i++) {
+        columnTypes[i] = 'label';
+      }
+    }
+
     this.columnTypes = columnTypes;
     return columnTypes;
+  }
+
+  detectLeadingLabelColumns(colCount) {
+    let count = 0;
+    for (let col = 0; col < colCount; col++) {
+      const stats = this.getColumnStats(col);
+      if (stats.rowCount === 0) break;
+      if (!stats.isLikelyLabel) break;
+      count++;
+    }
+    return count;
+  }
+
+  getColumnStats(col) {
+    let numericCount = 0;
+    let rowCount = 0;
+    let bodyRowCount = 0;
+    let bodyHeaderCount = 0;
+
+    this.grid.forEach((row, rowIndex) => {
+      const cell = row && row[col];
+      if (!cell || !this.isMeaningfulText(cell.text)) return;
+      rowCount++;
+      if (cell.numeric.isNumeric && !cell.numeric.isYear) {
+        numericCount++;
+      }
+      if (rowIndex >= this.headerRowCount) {
+        bodyRowCount++;
+        if (cell.isHeader) bodyHeaderCount++;
+      }
+    });
+
+    const numericRatioAll = rowCount > 0 ? numericCount / rowCount : 0;
+    const bodyHeaderRatio = bodyRowCount > 0 ? bodyHeaderCount / bodyRowCount : 0;
+    const headerRowIndex = this.headerRowCount > 0 ? this.headerRowCount - 1 : -1;
+    const headerCell = headerRowIndex >= 0 && this.grid[headerRowIndex]
+      ? this.grid[headerRowIndex][col]
+      : null;
+    const hasHeaderText = headerCell && headerCell.isHeader && this.isMeaningfulText(headerCell.text);
+
+    return {
+      rowCount,
+      numericRatioAll,
+      bodyHeaderRatio,
+      isLikelyLabel: numericRatioAll < 0.2 && (bodyHeaderRatio > 0.6 || hasHeaderText)
+    };
   }
 
   // Build metadata for each column to support user-selectable label column
@@ -499,6 +553,25 @@ class TableParser {
     return headers;
   }
 
+  extractRowUnit(row, labelColumnCount) {
+    const unitTexts = new Set();
+    let hasNumeric = false;
+
+    for (let c = labelColumnCount; c < row.length; c++) {
+      const cell = row[c];
+      if (!cell) continue;
+      if (cell.numeric.isNumeric && !cell.numeric.isYear) {
+        hasNumeric = true;
+      }
+      if (this.isMeaningfulText(cell.text)) {
+        unitTexts.add(cell.text);
+      }
+    }
+
+    if (hasNumeric || unitTexts.size !== 1) return null;
+    return Array.from(unitTexts)[0];
+  }
+
   // Extract the final parsed data structure
   parse() {
     this.buildGrid();
@@ -518,18 +591,62 @@ class TableParser {
 
     const dataRows = [];
     const rowLabels = [];
+    const activeGroupLabels = new Array(this.labelColumnCount).fill('');
+    let unitContext = '';
 
-    // Extract data rows
+    // Extract data rows with group/unit context from tbody
     this.grid.forEach((row, rowIndex) => {
-      if (this.rowTypes[rowIndex] !== 'data' || !row) return;
+      if (!row || this.rowTypes[rowIndex] === 'empty') return;
 
-      // Build row label from label columns
-      const labelParts = [];
+      const rowSpecificLabels = new Array(this.labelColumnCount).fill('');
+
       for (let c = 0; c < this.labelColumnCount; c++) {
-        if (row[c] && row[c].text) {
-          labelParts.push(row[c].text);
+        const cell = row[c];
+        if (!cell || !this.isMeaningfulText(cell.text)) continue;
+
+        if (cell.rowspan > 1) {
+          activeGroupLabels[c] = cell.text;
+        } else if (cell.originalRow === rowIndex) {
+          rowSpecificLabels[c] = cell.text;
         }
       }
+
+      // Reset deeper groups when a higher-level group starts
+      const firstGroupIndex = rowSpecificLabels.findIndex(text => this.isMeaningfulText(text));
+      if (firstGroupIndex >= 0) {
+        for (let c = firstGroupIndex + 1; c < this.labelColumnCount; c++) {
+          if (!this.isMeaningfulText(rowSpecificLabels[c])) {
+            activeGroupLabels[c] = '';
+          }
+        }
+      }
+
+      if (rowIndex >= this.headerRowCount) {
+        const unitCandidate = this.extractRowUnit(row, this.labelColumnCount);
+        if (unitCandidate) {
+          unitContext = unitCandidate;
+        }
+      }
+
+      if (this.rowTypes[rowIndex] !== 'data') return;
+
+      // Build row label from label columns plus unit context
+      const labelParts = [];
+      for (let c = 0; c < this.labelColumnCount; c++) {
+        const part = rowSpecificLabels[c] || activeGroupLabels[c];
+        if (this.isMeaningfulText(part) && part !== labelParts[labelParts.length - 1]) {
+          labelParts.push(part);
+        }
+      }
+
+      if (this.isMeaningfulText(unitContext)) {
+        const unitLower = unitContext.toLowerCase();
+        const alreadyIncluded = labelParts.some(part => part.toLowerCase().includes(unitLower));
+        if (!alreadyIncluded) {
+          labelParts.push(unitContext);
+        }
+      }
+
       rowLabels.push(labelParts.join(' - ') || `Row ${dataRows.length + 1}`);
 
       // Extract numeric values from data columns
