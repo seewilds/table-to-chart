@@ -83,7 +83,7 @@ function enableChartMode() {
   console.log('Chart mode enabled');
 }
 
-// Disable chart mode - remove highlights
+// Disable chart mode - remove highlights and close modal
 function disableChartMode() {
   chartModeEnabled = false;
   // Remove any existing highlight
@@ -91,6 +91,8 @@ function disableChartMode() {
     currentHighlightedTable.classList.remove('table-chart-highlight');
     currentHighlightedTable = null;
   }
+  // Close modal if open
+  TC.closeModal();
   console.log('Chart mode disabled');
 }
 

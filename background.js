@@ -145,6 +145,17 @@ chrome.tabs.onRemoved.addListener((tabId) => {
   removeTabState(tabId);
 });
 
+// Re-inject scripts on navigation/reload when chart mode is enabled
+chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
+  if (changeInfo.status === 'complete') {
+    const enabled = await getTabState(tabId);
+    if (enabled) {
+      await injectScripts(tabId);
+    }
+    await updateActionButton(tabId, enabled);
+  }
+});
+
 // Restore icon state when tab is activated (handles service worker suspension)
 chrome.tabs.onActivated.addListener(async ({ tabId }) => {
   const enabled = await getTabState(tabId);

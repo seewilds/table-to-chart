@@ -191,6 +191,9 @@ async function copyChart() {
 
   try {
     const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
+    if (!blob) {
+      throw new Error('Failed to create image from canvas');
+    }
     await navigator.clipboard.write([
       new ClipboardItem({ 'image/png': blob })
     ]);
