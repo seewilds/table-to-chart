@@ -4,6 +4,7 @@
   let modal = null;
   let chartInstance = null;
   let parsedData = null;
+  let viewMode = 'columns'; // 'columns' = column headers as series, 'rows' = row labels as series
 
   // ============================================================
   // INTELLIGENT TABLE PARSER
@@ -302,35 +303,80 @@
         dataRows.push(values);
       });
 
-      // Build series (each data column becomes a series)
-      const series = [];
-      for (let c = this.labelColumnCount; c < columnHeaders.length; c++) {
+      // Get data column headers (excluding label columns)
+      const dataColumnHeaders = columnHeaders.slice(this.labelColumnCount);
+
+      // Build series by columns (each data column becomes a series)
+      const seriesByColumn = [];
+      for (let c = 0; c < dataColumnHeaders.length; c++) {
         const seriesData = dataRows.map(row => {
-          const cell = row[c - this.labelColumnCount];
+          const cell = row[c];
           return cell ? cell.value : NaN;
         });
 
-        // Only include series with at least some numeric data
         const numericCount = seriesData.filter(v => !isNaN(v)).length;
         if (numericCount > 0) {
-          series.push({
-            name: columnHeaders[c],
+          seriesByColumn.push({
+            name: dataColumnHeaders[c],
             data: seriesData,
             index: c
           });
         }
       }
 
+      // Build series by rows (each data row becomes a series)
+      const seriesByRow = [];
+      rowLabels.forEach((label, rowIdx) => {
+        const seriesData = dataRows[rowIdx].map(cell => cell.value);
+        const numericCount = seriesData.filter(v => !isNaN(v)).length;
+        if (numericCount > 0) {
+          seriesByRow.push({
+            name: label,
+            data: seriesData,
+            index: rowIdx
+          });
+        }
+      });
+
       return {
         rowLabels,
         columnHeaders,
-        series,
+        dataColumnHeaders,
+        seriesByColumn,
+        seriesByRow,
         dataRows,
         headerRowCount: this.headerRowCount,
         labelColumnCount: this.labelColumnCount,
         rawGrid: this.grid,
         rowTypes: this.rowTypes,
         columnTypes: this.columnTypes
+      };
+    }
+  }
+
+  // ============================================================
+  // DATA VIEW HELPERS
+  // ============================================================
+
+  // Get the current view's series and labels based on viewMode
+  function getCurrentView() {
+    if (!parsedData) return null;
+
+    if (viewMode === 'columns') {
+      // Columns as series, rows as X-axis labels
+      return {
+        series: parsedData.seriesByColumn,
+        labels: parsedData.rowLabels,
+        seriesLabel: 'Columns',
+        axisLabel: 'Rows'
+      };
+    } else {
+      // Rows as series, columns as X-axis labels
+      return {
+        series: parsedData.seriesByRow,
+        labels: parsedData.dataColumnHeaders,
+        seriesLabel: 'Rows',
+        axisLabel: 'Columns'
       };
     }
   }
@@ -374,12 +420,24 @@
               Stacked
             </label>
           </div>
+          <div class="table-chart-control-row table-chart-view-row">
+            <span class="table-chart-view-label">View Data:</span>
+            <div class="table-chart-toggle">
+              <button id="table-chart-view-columns" class="active">
+                <span class="toggle-icon">↓</span> By Columns
+              </button>
+              <button id="table-chart-view-rows">
+                <span class="toggle-icon">→</span> By Rows
+              </button>
+            </div>
+            <span class="table-chart-view-hint" id="table-chart-view-hint"></span>
+          </div>
           <div class="table-chart-control-row">
             <label>
-              Data Series:
+              <span id="table-chart-series-label">Data Series:</span>
               <select id="table-chart-series" multiple size="4"></select>
             </label>
-            <div class="table-chart-series-hint">Hold Ctrl/Cmd to select multiple series</div>
+            <div class="table-chart-series-hint">Hold Ctrl/Cmd to select multiple</div>
           </div>
         </div>
         <div class="table-chart-canvas-container">
@@ -398,7 +456,44 @@
     modal.querySelector('#table-chart-horizontal').addEventListener('change', updateChart);
     modal.querySelector('#table-chart-stacked').addEventListener('change', updateChart);
 
+    // View mode toggle
+    modal.querySelector('#table-chart-view-columns').addEventListener('click', () => setViewMode('columns'));
+    modal.querySelector('#table-chart-view-rows').addEventListener('click', () => setViewMode('rows'));
+
     return modal;
+  }
+
+  function setViewMode(mode) {
+    viewMode = mode;
+
+    // Update toggle button states
+    const colBtn = document.getElementById('table-chart-view-columns');
+    const rowBtn = document.getElementById('table-chart-view-rows');
+
+    if (mode === 'columns') {
+      colBtn.classList.add('active');
+      rowBtn.classList.remove('active');
+    } else {
+      colBtn.classList.remove('active');
+      rowBtn.classList.add('active');
+    }
+
+    // Update the view
+    updateViewHint();
+    populateSeriesSelector();
+    updateChart();
+  }
+
+  function updateViewHint() {
+    const hint = document.getElementById('table-chart-view-hint');
+    const view = getCurrentView();
+    if (!view) return;
+
+    if (viewMode === 'columns') {
+      hint.textContent = `X-axis: ${parsedData.rowLabels.length} rows | Series: ${view.series.length} columns`;
+    } else {
+      hint.textContent = `X-axis: ${parsedData.dataColumnHeaders.length} columns | Series: ${view.series.length} rows`;
+    }
   }
 
   function closeModal() {
@@ -428,7 +523,10 @@
       [199, 199, 199],
       [83, 102, 255],
       [255, 99, 255],
-      [99, 255, 132]
+      [99, 255, 132],
+      [255, 182, 193],
+      [0, 128, 128],
+      [255, 215, 0]
     ];
 
     const result = [];
@@ -440,28 +538,37 @@
   }
 
   // Update the UI with parsed data info
-  function updateInfo(data) {
+  function updateInfo() {
     const info = document.getElementById('table-chart-info');
+    if (!parsedData) return;
+
     info.innerHTML = `
-      <span>Detected: ${data.headerRowCount} header row(s), ${data.labelColumnCount} label column(s), ${data.rowLabels.length} data rows, ${data.series.length} data series</span>
+      <span>Detected: ${parsedData.headerRowCount} header row(s), ${parsedData.labelColumnCount} label column(s), ${parsedData.rowLabels.length} data rows, ${parsedData.dataColumnHeaders.length} data columns</span>
     `;
   }
 
-  // Populate series selector
-  function populateSeriesSelector(data) {
+  // Populate series selector based on current view mode
+  function populateSeriesSelector() {
     const select = document.getElementById('table-chart-series');
-    select.innerHTML = '';
+    const label = document.getElementById('table-chart-series-label');
+    const view = getCurrentView();
 
-    data.series.forEach((series, index) => {
+    if (!view) return;
+
+    select.innerHTML = '';
+    label.textContent = viewMode === 'columns' ? 'Column Series:' : 'Row Series:';
+
+    view.series.forEach((series, index) => {
       const option = document.createElement('option');
       option.value = index;
       option.textContent = series.name;
-      option.selected = index < 3; // Select first 3 by default
+      // Select first few by default, but not too many
+      option.selected = index < Math.min(5, view.series.length);
       select.appendChild(option);
     });
 
     // Adjust size based on number of series
-    select.size = Math.min(Math.max(data.series.length, 2), 6);
+    select.size = Math.min(Math.max(view.series.length, 2), 8);
   }
 
   // Get selected series indices
@@ -472,20 +579,26 @@
 
   // Update chart based on current settings
   function updateChart() {
-    if (!parsedData || parsedData.series.length === 0) return;
+    const view = getCurrentView();
+    if (!view || view.series.length === 0) return;
 
     const chartType = document.getElementById('table-chart-type').value;
     const horizontal = document.getElementById('table-chart-horizontal').checked;
     const stacked = document.getElementById('table-chart-stacked').checked;
-    const selectedIndices = getSelectedSeries();
+    let selectedIndices = getSelectedSeries();
 
     if (selectedIndices.length === 0) {
       // Select first series if none selected
-      document.getElementById('table-chart-series').options[0].selected = true;
-      selectedIndices.push(0);
+      const select = document.getElementById('table-chart-series');
+      if (select.options.length > 0) {
+        select.options[0].selected = true;
+        selectedIndices = [0];
+      }
     }
 
-    const selectedSeries = selectedIndices.map(i => parsedData.series[i]);
+    const selectedSeries = selectedIndices.map(i => view.series[i]).filter(Boolean);
+    if (selectedSeries.length === 0) return;
+
     const isPieType = ['pie', 'doughnut', 'polarArea'].includes(chartType);
     const isRadar = chartType === 'radar';
 
@@ -499,7 +612,7 @@
     const datasets = selectedSeries.map((series, idx) => {
       const validData = series.data.map((v, i) => ({
         value: v,
-        label: parsedData.rowLabels[i]
+        label: view.labels[i]
       })).filter(d => !isNaN(d.value));
 
       return {
@@ -513,18 +626,19 @@
         borderColor: isPieType
           ? generateColors(validData.length, 1)
           : generateColors(selectedSeries.length, 1)[idx],
-        borderWidth: 1,
-        fill: chartType === 'line' ? false : undefined
+        borderWidth: isPieType ? 2 : 2,
+        fill: chartType === 'line' ? false : undefined,
+        tension: chartType === 'line' ? 0.1 : undefined
       };
     });
 
     // For pie charts, use the first selected series and filter valid data
-    let labels = parsedData.rowLabels;
+    let labels = view.labels;
     if (isPieType && selectedSeries.length > 0) {
       const validIndices = selectedSeries[0].data
         .map((v, i) => !isNaN(v) ? i : -1)
         .filter(i => i >= 0);
-      labels = validIndices.map(i => parsedData.rowLabels[i]);
+      labels = validIndices.map(i => view.labels[i]);
       datasets[0].data = validIndices.map(i => selectedSeries[0].data[i]);
     }
 
@@ -545,17 +659,27 @@
           },
           title: {
             display: true,
-            text: selectedSeries.map(s => s.name).join(', ')
+            text: selectedSeries.length <= 3
+              ? selectedSeries.map(s => s.name).join(', ')
+              : `${selectedSeries.length} series selected`
           }
         },
         scales: (isPieType || isRadar) ? {} : {
           x: {
-            stacked: stacked
+            stacked: stacked,
+            ticks: {
+              maxRotation: 45,
+              minRotation: 0
+            }
           },
           y: {
             stacked: stacked,
             beginAtZero: true
           }
+        },
+        interaction: {
+          intersect: false,
+          mode: 'index'
         }
       }
     };
@@ -583,14 +707,22 @@
 
     console.log('Parsed table data:', parsedData);
 
-    if (parsedData.series.length === 0) {
+    if (parsedData.seriesByColumn.length === 0 && parsedData.seriesByRow.length === 0) {
       alert('Could not find numeric data in this table. The table may have an unsupported structure.');
       return;
     }
 
+    // Reset view mode and show modal
+    viewMode = 'columns';
     showModal();
-    updateInfo(parsedData);
-    populateSeriesSelector(parsedData);
+
+    // Reset toggle buttons
+    document.getElementById('table-chart-view-columns').classList.add('active');
+    document.getElementById('table-chart-view-rows').classList.remove('active');
+
+    updateInfo();
+    updateViewHint();
+    populateSeriesSelector();
     updateChart();
   }
 
@@ -619,5 +751,5 @@
     }
   });
 
-  console.log('Table to Chart extension loaded (v2 - intelligent parsing)');
+  console.log('Table to Chart extension loaded (v3 - dual view modes)');
 })();
