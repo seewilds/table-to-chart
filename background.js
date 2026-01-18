@@ -89,12 +89,17 @@ async function isInjected(tabId) {
 }
 
 // Inject content scripts and styles
+// Returns true on success, false on failure
 async function injectScripts(tabId) {
   // Check if already injected
   if (await isInjected(tabId)) {
     // Just enable chart mode
-    await chrome.tabs.sendMessage(tabId, { type: 'chartModeChanged', enabled: true });
-    return;
+    try {
+      await chrome.tabs.sendMessage(tabId, { type: 'chartModeChanged', enabled: true });
+      return true;
+    } catch (e) {
+      return false;
+    }
   }
 
   try {
@@ -112,8 +117,10 @@ async function injectScripts(tabId) {
 
     // Enable chart mode after injection
     await chrome.tabs.sendMessage(tabId, { type: 'chartModeChanged', enabled: true });
+    return true;
   } catch (e) {
     console.error('Failed to inject scripts:', e);
+    return false;
   }
 }
 
@@ -130,12 +137,32 @@ async function disableChartMode(tabId) {
 chrome.action.onClicked.addListener(async (tab) => {
   const currentState = await getTabState(tab.id);
   const newState = !currentState;
-  await setTabState(tab.id, newState);
-  await updateActionButton(tab.id, newState);
 
   if (newState) {
-    await injectScripts(tab.id);
+    // Enabling - try to inject first
+    const success = await injectScripts(tab.id);
+    if (success) {
+      await setTabState(tab.id, true);
+      await updateActionButton(tab.id, true);
+    } else {
+      // Injection failed (restricted page like chrome://, PDF, etc.)
+      // Keep state as disabled and show error via badge
+      await setTabState(tab.id, false);
+      await updateActionButton(tab.id, false);
+      await chrome.action.setBadgeText({ tabId: tab.id, text: '!' });
+      await chrome.action.setBadgeBackgroundColor({ tabId: tab.id, color: '#d93025' });
+      // Clear error badge after 2 seconds
+      setTimeout(async () => {
+        const stillDisabled = !(await getTabState(tab.id));
+        if (stillDisabled) {
+          await chrome.action.setBadgeText({ tabId: tab.id, text: '' });
+        }
+      }, 2000);
+    }
   } else {
+    // Disabling
+    await setTabState(tab.id, false);
+    await updateActionButton(tab.id, false);
     await disableChartMode(tab.id);
   }
 });

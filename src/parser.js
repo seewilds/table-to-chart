@@ -55,8 +55,23 @@ class TableParser {
     return false;
   }
 
+  // Check if any ancestor up to the table is hidden
+  hasHiddenAncestor(element) {
+    let current = element.parentElement;
+    while (current && current !== this.table.parentElement) {
+      if (this.isElementHidden(current)) return true;
+      current = current.parentElement;
+    }
+    return false;
+  }
+
   // Extract visible text from a cell using computed styles
   extractVisibleText(element) {
+    // Check if the element or any ancestor is hidden
+    if (this.isElementHidden(element) || this.hasHiddenAncestor(element)) {
+      return '';
+    }
+
     const textParts = [];
 
     // Recursive function to traverse and collect visible text
