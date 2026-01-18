@@ -558,8 +558,6 @@
                 </button>
               </div>
             </div>
-          </div>
-          <div class="table-chart-control-row table-chart-options-row">
             <label>
               <input type="checkbox" id="table-chart-horizontal">
               Horizontal
@@ -568,7 +566,6 @@
               <input type="checkbox" id="table-chart-stacked">
               Stacked
             </label>
-            <span class="table-chart-view-hint" id="table-chart-view-hint"></span>
           </div>
           <div class="table-chart-control-row">
             <label>
@@ -623,15 +620,7 @@
   }
 
   function updateViewHint() {
-    const hint = document.getElementById('table-chart-view-hint');
-    const view = getCurrentView();
-    if (!view) return;
-
-    if (viewMode === 'columns') {
-      hint.textContent = `X-axis: ${parsedData.rowLabels.length} rows | Series: ${view.series.length} columns`;
-    } else {
-      hint.textContent = `X-axis: ${parsedData.dataColumnHeaders.length} columns | Series: ${view.series.length} rows`;
-    }
+    // View info now shown in the info bar
   }
 
   function closeModal() {

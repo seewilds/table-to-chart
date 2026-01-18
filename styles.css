@@ -166,10 +166,6 @@ table.table-chart-highlight {
   gap: 10px !important;
 }
 
-.table-chart-options-row {
-  align-items: center !important;
-}
-
 .table-chart-view-label {
   font-size: 14px !important;
   font-weight: 500 !important;
@@ -214,12 +210,6 @@ table.table-chart-highlight {
   font-size: 14px !important;
 }
 
-.table-chart-view-hint {
-  font-size: 12px !important;
-  color: #666 !important;
-  font-style: italic !important;
-  margin-left: auto !important;
-}
 
 /* Canvas container */
 .table-chart-canvas-container {
@@ -301,9 +291,6 @@ table.table-chart-highlight {
     color: white !important;
   }
 
-  .table-chart-view-hint {
-    color: #999 !important;
-  }
 }
 
 /* Responsive adjustments */
