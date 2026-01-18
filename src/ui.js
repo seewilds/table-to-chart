@@ -11,6 +11,10 @@ function createModal() {
     <div class="table-chart-container">
       <div class="table-chart-info" id="table-chart-info">
         <span class="table-chart-info-text"></span>
+        <div class="table-chart-actions">
+          <button id="table-chart-save" class="action-btn" title="Save as PNG">Save</button>
+          <button id="table-chart-copy" class="action-btn" title="Copy to clipboard">Copy</button>
+        </div>
         <button class="table-chart-close">&times;</button>
       </div>
       <div class="table-chart-canvas-container">
@@ -81,6 +85,8 @@ function createModal() {
   TC.modal.querySelector('#table-chart-series').addEventListener('change', updateChart);
   TC.modal.querySelector('#table-chart-rows').addEventListener('change', updateChart);
   TC.modal.querySelector('#table-chart-label-column').addEventListener('change', onLabelColumnChange);
+  TC.modal.querySelector('#table-chart-save').addEventListener('click', saveChart);
+  TC.modal.querySelector('#table-chart-copy').addEventListener('click', copyChart);
 
   // Toggle buttons
   TC.modal.querySelector('#table-chart-view-columns').addEventListener('click', () => setViewMode('columns'));
@@ -162,6 +168,41 @@ function closeModal() {
       TC.chartInstance = null;
     }
   }
+}
+
+// Save chart as PNG to downloads
+function saveChart() {
+  const canvas = document.getElementById('table-chart-canvas');
+  if (!canvas) return;
+
+  const link = document.createElement('a');
+  link.download = 'chart.png';
+  link.href = canvas.toDataURL('image/png');
+  link.click();
+}
+
+// Copy chart to clipboard
+async function copyChart() {
+  const canvas = document.getElementById('table-chart-canvas');
+  if (!canvas) return;
+
+  const copyBtn = document.getElementById('table-chart-copy');
+  const originalText = copyBtn.textContent;
+
+  try {
+    const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
+    await navigator.clipboard.write([
+      new ClipboardItem({ 'image/png': blob })
+    ]);
+    copyBtn.textContent = 'Copied!';
+  } catch (err) {
+    console.error('Failed to copy chart:', err);
+    copyBtn.textContent = 'Failed';
+  }
+
+  setTimeout(() => {
+    copyBtn.textContent = originalText;
+  }, 1500);
 }
 
 function showModal() {
