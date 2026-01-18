@@ -133,6 +133,27 @@ table.table-chart-highlight {
   gap: 8px !important;
 }
 
+.toolbar-group-style {
+  flex-direction: column !important;
+  align-items: stretch !important;
+  gap: 6px !important;
+}
+
+.toolbar-row {
+  display: grid !important;
+  grid-template-columns: max-content max-content !important;
+  align-items: center !important;
+  gap: 8px !important;
+}
+
+.toolbar-label-spacer {
+  visibility: hidden !important;
+}
+
+.toolbar-row > .toggle-btn {
+  border-radius: 4px !important;
+}
+
 .toolbar-label {
   font-weight: 500 !important;
 }

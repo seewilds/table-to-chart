@@ -49,17 +49,6 @@ function createModal() {
             </div>
           </div>
           <div class="toolbar-group">
-            <span class="toolbar-label">Palette:</span>
-            <select id="table-chart-palette">
-              <option value="default">Default</option>
-              <option value="pastel">Pastel</option>
-              <option value="bold">Bold</option>
-              <option value="monochrome">Monochrome</option>
-              <option value="cyberpunk">Cyberpunk</option>
-              <option value="forest">Forest</option>
-            </select>
-          </div>
-          <div class="toolbar-group">
             <span id="table-chart-series-label" class="toolbar-label">Series:</span>
             <select id="table-chart-series" multiple size="4"></select>
           </div>
@@ -67,8 +56,22 @@ function createModal() {
             <span class="toolbar-label">Categories:</span>
             <select id="table-chart-rows" multiple size="4"></select>
           </div>
-          <div class="toolbar-group" id="table-chart-advanced-toggle-group">
-            <button id="table-chart-advanced-toggle" class="toggle-btn">Advanced</button>
+          <div class="toolbar-group toolbar-group-style">
+            <div class="toolbar-row">
+              <span class="toolbar-label">Palette:</span>
+              <select id="table-chart-palette">
+                <option value="default">Default</option>
+                <option value="pastel">Pastel</option>
+                <option value="bold">Bold</option>
+                <option value="monochrome">Monochrome</option>
+                <option value="cyberpunk">Cyberpunk</option>
+                <option value="forest">Forest</option>
+              </select>
+            </div>
+            <div class="toolbar-row">
+              <span class="toolbar-label toolbar-label-spacer">Palette:</span>
+              <button id="table-chart-advanced-toggle" class="toggle-btn">Advanced</button>
+            </div>
           </div>
           <div class="toolbar-group" id="table-chart-label-group">
             <span class="toolbar-label">Label column:</span>
