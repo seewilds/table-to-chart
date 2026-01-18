@@ -194,6 +194,60 @@ function closeModal() {
   }
 }
 
+function getAnnotatedCanvas(originalCanvas) {
+  const sourceText = `Source: ${window.location.href}`;
+  const container = document.querySelector('.table-chart-canvas-container');
+  const containerStyle = container ? getComputedStyle(container) : null;
+  const backgroundColor = containerStyle && containerStyle.backgroundColor && containerStyle.backgroundColor !== 'rgba(0, 0, 0, 0)'
+    ? containerStyle.backgroundColor
+    : '#ffffff';
+  const scale = originalCanvas.clientWidth ? originalCanvas.width / originalCanvas.clientWidth : 1;
+  const fontSize = Math.round(12 * scale);
+  const padding = Math.round(10 * scale);
+  const lineHeight = Math.round(fontSize * 1.4);
+
+  const tempCanvas = document.createElement('canvas');
+  const tempCtx = tempCanvas.getContext('2d');
+  tempCtx.font = `${fontSize}px sans-serif`;
+  const maxWidth = Math.max(originalCanvas.width - padding * 2, 1);
+
+  const words = sourceText.split(' ');
+  const lines = [];
+  let currentLine = '';
+  words.forEach(word => {
+    const testLine = currentLine ? `${currentLine} ${word}` : word;
+    if (tempCtx.measureText(testLine).width <= maxWidth) {
+      currentLine = testLine;
+      return;
+    }
+    if (currentLine) {
+      lines.push(currentLine);
+    }
+    currentLine = word;
+  });
+  if (currentLine) {
+    lines.push(currentLine);
+  }
+
+  const extraHeight = padding * 2 + lineHeight * lines.length;
+  const annotatedCanvas = document.createElement('canvas');
+  annotatedCanvas.width = originalCanvas.width;
+  annotatedCanvas.height = originalCanvas.height + extraHeight;
+
+  const ctx = annotatedCanvas.getContext('2d');
+  ctx.drawImage(originalCanvas, 0, 0);
+  ctx.fillStyle = backgroundColor;
+  ctx.fillRect(0, originalCanvas.height, annotatedCanvas.width, extraHeight);
+  ctx.font = `${fontSize}px sans-serif`;
+  ctx.fillStyle = '#000000';
+  ctx.textBaseline = 'top';
+  lines.forEach((line, index) => {
+    ctx.fillText(line, padding, originalCanvas.height + padding + lineHeight * index);
+  });
+
+  return annotatedCanvas;
+}
+
 // Save chart as PNG to downloads
 function saveChart() {
   const canvas = document.getElementById('table-chart-canvas');
@@ -201,7 +255,7 @@ function saveChart() {
 
   const link = document.createElement('a');
   link.download = 'chart.png';
-  link.href = canvas.toDataURL('image/png');
+  link.href = getAnnotatedCanvas(canvas).toDataURL('image/png');
   link.click();
 }
 
@@ -214,7 +268,8 @@ async function copyChart() {
   const originalText = copyBtn.textContent;
 
   try {
-    const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
+    const exportCanvas = getAnnotatedCanvas(canvas);
+    const blob = await new Promise(resolve => exportCanvas.toBlob(resolve, 'image/png'));
     if (!blob) {
       throw new Error('Failed to create image from canvas');
     }
