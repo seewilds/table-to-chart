@@ -535,46 +535,32 @@
         </div>
         <div class="table-chart-info" id="table-chart-info"></div>
         <div class="table-chart-controls">
-          <div class="table-chart-control-row">
-            <label>
-              Chart Type:
+          <div class="table-chart-toolbar">
+            <div class="toolbar-group">
+              <span class="toolbar-label">Chart Type:</span>
               <select id="table-chart-type">
-                <option value="bar">Bar Chart</option>
-                <option value="line">Line Chart</option>
-                <option value="pie">Pie Chart</option>
-                <option value="doughnut">Doughnut Chart</option>
-                <option value="radar">Radar Chart</option>
+                <option value="bar">Bar</option>
+                <option value="line">Line</option>
+                <option value="pie">Pie</option>
+                <option value="doughnut">Doughnut</option>
+                <option value="radar">Radar</option>
                 <option value="polarArea">Polar Area</option>
               </select>
-            </label>
-            <div class="table-chart-view-section">
-              <span class="table-chart-view-label">View Data:</span>
-              <div class="table-chart-toggle">
-                <button id="table-chart-view-columns" class="active">
-                  <span class="toggle-icon">↓</span> By Columns
-                </button>
-                <button id="table-chart-view-rows">
-                  <span class="toggle-icon">→</span> By Rows
-                </button>
-              </div>
             </div>
-            <div class="table-chart-checkboxes">
-              <label>
-                <input type="checkbox" id="table-chart-horizontal">
-                Horizontal
-              </label>
-              <label>
-                <input type="checkbox" id="table-chart-stacked">
-                Stacked
-              </label>
+            <div class="toolbar-group">
+              <span class="toolbar-label">View:</span>
+              <button id="table-chart-view-columns" class="toggle-btn active">Columns</button>
+              <button id="table-chart-view-rows" class="toggle-btn">Rows</button>
+            </div>
+            <div class="toolbar-group">
+              <label><input type="checkbox" id="table-chart-horizontal"> Horizontal</label>
+              <label><input type="checkbox" id="table-chart-stacked"> Stacked</label>
             </div>
           </div>
-          <div class="table-chart-control-row">
-            <label>
-              <span id="table-chart-series-label">Data Series:</span>
-              <select id="table-chart-series" multiple size="4"></select>
-            </label>
-            <div class="table-chart-series-hint">Hold Ctrl/Cmd to select multiple</div>
+          <div class="table-chart-series-row">
+            <span id="table-chart-series-label">Series:</span>
+            <select id="table-chart-series" multiple size="4"></select>
+            <span class="table-chart-series-hint">Ctrl/Cmd to multi-select</span>
           </div>
         </div>
         <div class="table-chart-canvas-container">

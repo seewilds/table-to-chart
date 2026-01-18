@@ -94,128 +94,94 @@ table.table-chart-highlight {
 
 /* Controls */
 .table-chart-controls {
-  padding: 16px 20px !important;
+  padding: 12px 20px !important;
   background: #f8f9fa !important;
   border-bottom: 1px solid #e0e0e0 !important;
+  font-size: 14px !important;
+  color: #333 !important;
 }
 
-.table-chart-control-row {
+/* Toolbar - single row of controls */
+.table-chart-toolbar {
   display: flex !important;
-  justify-content: center !important;
-  gap: 28px !important;
-  align-items: center !important;
   flex-wrap: wrap !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 24px !important;
   margin-bottom: 12px !important;
 }
 
-.table-chart-control-row:last-child {
-  margin-bottom: 0 !important;
+.toolbar-group {
+  display: flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+}
+
+.toolbar-label {
+  font-weight: 500 !important;
+}
+
+.table-chart-controls select {
+  padding: 6px 10px !important;
+  border: 1px solid #ccc !important;
+  border-radius: 4px !important;
+  font-size: 14px !important;
+  background: white !important;
 }
 
 .table-chart-controls label {
   display: flex !important;
   align-items: center !important;
-  gap: 8px !important;
-  font-size: 14px !important;
-  color: #333 !important;
-  font-weight: 500 !important;
-}
-
-.table-chart-controls select {
-  padding: 8px 12px !important;
-  border: 1px solid #ddd !important;
-  border-radius: 6px !important;
-  font-size: 14px !important;
-  background: white !important;
+  gap: 4px !important;
   cursor: pointer !important;
-  min-width: 140px !important;
-}
-
-.table-chart-controls select[multiple] {
-  min-width: 200px !important;
-  padding: 4px !important;
-}
-
-.table-chart-controls select[multiple] option {
-  padding: 6px 10px !important;
-}
-
-.table-chart-controls select:focus {
-  outline: none !important;
-  border-color: #4285f4 !important;
-  box-shadow: 0 0 0 3px rgba(66, 133, 244, 0.2) !important;
 }
 
 .table-chart-controls input[type="checkbox"] {
-  width: 18px !important;
-  height: 18px !important;
   cursor: pointer !important;
   accent-color: #4285f4 !important;
 }
 
-.table-chart-series-hint {
-  font-size: 12px !important;
-  color: #666 !important;
-  font-style: italic !important;
-  align-self: center !important;
-}
-
-/* View mode toggle */
-.table-chart-view-section {
-  display: flex !important;
-  align-items: center !important;
-  gap: 10px !important;
-}
-
-/* Checkbox group */
-.table-chart-checkboxes {
-  display: flex !important;
-  align-items: center !important;
-  gap: 16px !important;
-}
-
-.table-chart-view-label {
-  font-size: 14px !important;
-  font-weight: 500 !important;
-  color: #333 !important;
-}
-
-.table-chart-toggle {
-  display: flex !important;
-  border-radius: 6px !important;
-  overflow: hidden !important;
-  border: 1px solid #ddd !important;
-}
-
-.table-chart-toggle button {
-  padding: 8px 14px !important;
-  border: none !important;
+.toggle-btn {
+  padding: 6px 12px !important;
+  border: 1px solid #ccc !important;
   background: white !important;
-  color: #666 !important;
-  font-size: 13px !important;
-  font-weight: 500 !important;
+  font-size: 14px !important;
   cursor: pointer !important;
-  transition: all 0.2s !important;
-  display: flex !important;
-  align-items: center !important;
-  gap: 6px !important;
 }
 
-.table-chart-toggle button:first-child {
-  border-right: 1px solid #ddd !important;
+.toggle-btn:first-of-type {
+  border-radius: 4px 0 0 4px !important;
+  border-right: none !important;
 }
 
-.table-chart-toggle button:hover {
-  background: #f0f0f0 !important;
+.toggle-btn:last-of-type {
+  border-radius: 0 4px 4px 0 !important;
 }
 
-.table-chart-toggle button.active {
+.toggle-btn.active {
   background: #4285f4 !important;
   color: white !important;
+  border-color: #4285f4 !important;
 }
 
-.table-chart-toggle button .toggle-icon {
-  font-size: 14px !important;
+/* Series row */
+.table-chart-series-row {
+  display: flex !important;
+  align-items: flex-start !important;
+  gap: 12px !important;
+  flex-wrap: wrap !important;
+}
+
+.table-chart-series-row select[multiple] {
+  min-width: 180px !important;
+  padding: 4px !important;
+}
+
+.table-chart-series-hint {
+  font-size: 12px !important;
+  color: #888 !important;
+  font-style: italic !important;
+  align-self: center !important;
 }
 
 
@@ -273,32 +239,30 @@ table.table-chart-highlight {
     background: #252525 !important;
   }
 
-  .table-chart-view-label {
+  .toolbar-label {
     color: #e0e0e0 !important;
   }
 
-  .table-chart-toggle {
+  .table-chart-controls select {
+    background: #3d3d3d !important;
     border-color: #505050 !important;
+    color: #e0e0e0 !important;
   }
 
-  .table-chart-toggle button {
+  .toggle-btn {
     background: #3d3d3d !important;
+    border-color: #505050 !important;
     color: #ccc !important;
   }
 
-  .table-chart-toggle button:first-child {
-    border-right-color: #505050 !important;
-  }
-
-  .table-chart-toggle button:hover {
-    background: #4d4d4d !important;
-  }
-
-  .table-chart-toggle button.active {
+  .toggle-btn.active {
     background: #2d5aa0 !important;
     color: white !important;
   }
 
+  .table-chart-controls label {
+    color: #e0e0e0 !important;
+  }
 }
 
 /* Responsive adjustments */
@@ -308,16 +272,8 @@ table.table-chart-highlight {
     max-height: 95vh !important;
   }
 
-  .table-chart-control-row {
+  .table-chart-toolbar {
     flex-direction: column !important;
     gap: 12px !important;
-  }
-
-  .table-chart-controls select {
-    width: 100% !important;
-  }
-
-  .table-chart-controls select[multiple] {
-    width: 100% !important;
   }
 }
