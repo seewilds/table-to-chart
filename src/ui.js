@@ -30,17 +30,6 @@ function createModal() {
             </select>
           </div>
           <div class="toolbar-group">
-            <span class="toolbar-label">Options:</span>
-            <div class="btn-group">
-              <button id="table-chart-horizontal" class="toggle-btn">Horizontal</button>
-              <button id="table-chart-stacked" class="toggle-btn">Stacked</button>
-            </div>
-          </div>
-          <div class="toolbar-group" id="table-chart-label-group">
-            <span class="toolbar-label">Labels:</span>
-            <select id="table-chart-label-column"></select>
-          </div>
-          <div class="toolbar-group">
             <span class="toolbar-label">Plot:</span>
             <div class="btn-group">
               <button id="table-chart-view-columns" class="toggle-btn active">Columns</button>
@@ -48,8 +37,19 @@ function createModal() {
             </div>
           </div>
           <div class="toolbar-group">
+            <span class="toolbar-label">Options:</span>
+            <div class="btn-group">
+              <button id="table-chart-horizontal" class="toggle-btn">Horizontal</button>
+              <button id="table-chart-stacked" class="toggle-btn">Stacked</button>
+            </div>
+          </div>
+          <div class="toolbar-group">
             <span id="table-chart-series-label" class="toolbar-label">Series:</span>
             <select id="table-chart-series" multiple size="4"></select>
+          </div>
+          <div class="toolbar-group" id="table-chart-label-group">
+            <span class="toolbar-label">Labels:</span>
+            <select id="table-chart-label-column"></select>
           </div>
         </div>
       </div>
