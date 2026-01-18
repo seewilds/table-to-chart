@@ -34,7 +34,7 @@ function createModal() {
             </select>
           </div>
           <div class="toolbar-group">
-            <span class="toolbar-label">Plot:</span>
+            <span class="toolbar-label">View:</span>
             <div class="btn-group">
               <button id="table-chart-view-columns" class="toggle-btn active">Columns</button>
               <button id="table-chart-view-rows" class="toggle-btn">Rows</button>
@@ -63,11 +63,11 @@ function createModal() {
             <select id="table-chart-series" multiple size="4"></select>
           </div>
           <div class="toolbar-group" id="table-chart-row-group">
-            <span class="toolbar-label">Rows:</span>
+            <span class="toolbar-label">Categories:</span>
             <select id="table-chart-rows" multiple size="4"></select>
           </div>
           <div class="toolbar-group" id="table-chart-label-group">
-            <span class="toolbar-label">Labels:</span>
+            <span class="toolbar-label">Label column:</span>
             <select id="table-chart-label-column"></select>
           </div>
         </div>
@@ -243,7 +243,7 @@ function populateSeriesSelector() {
   if (!view) return;
 
   select.innerHTML = '';
-  label.textContent = TC.viewMode === 'columns' ? 'Column Series:' : 'Row Series:';
+  label.textContent = 'Series:';
 
   view.series.forEach((series, index) => {
     const option = document.createElement('option');
@@ -275,10 +275,10 @@ function populateRowSelector() {
 
   group.style.display = 'flex';
   select.innerHTML = '';
+  label.textContent = 'Categories:';
 
   if (TC.viewMode === 'columns') {
     // Filter rows on X-axis
-    label.textContent = 'Rows:';
     TC.parsedData.rowLabels.forEach((rowLabel, index) => {
       const option = document.createElement('option');
       option.value = index;
@@ -289,7 +289,6 @@ function populateRowSelector() {
     select.size = Math.min(Math.max(TC.parsedData.rowLabels.length, 2), 8);
   } else {
     // Filter columns on X-axis (rows mode)
-    label.textContent = 'Columns:';
     TC.parsedData.dataColumnHeaders.forEach((colHeader, index) => {
       const option = document.createElement('option');
       option.value = index;
