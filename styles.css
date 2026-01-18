@@ -164,7 +164,6 @@ table.table-chart-highlight {
   display: flex !important;
   align-items: center !important;
   gap: 10px !important;
-  margin-left: auto !important;
 }
 
 .table-chart-options-row {
