@@ -160,7 +160,14 @@ table.table-chart-highlight {
 }
 
 /* View mode toggle */
-.table-chart-view-row {
+.table-chart-view-section {
+  display: flex !important;
+  align-items: center !important;
+  gap: 10px !important;
+  margin-left: auto !important;
+}
+
+.table-chart-options-row {
   align-items: center !important;
 }
 

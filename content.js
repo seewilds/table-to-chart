@@ -547,6 +547,19 @@
                 <option value="polarArea">Polar Area</option>
               </select>
             </label>
+            <div class="table-chart-view-section">
+              <span class="table-chart-view-label">View Data:</span>
+              <div class="table-chart-toggle">
+                <button id="table-chart-view-columns" class="active">
+                  <span class="toggle-icon">↓</span> By Columns
+                </button>
+                <button id="table-chart-view-rows">
+                  <span class="toggle-icon">→</span> By Rows
+                </button>
+              </div>
+            </div>
+          </div>
+          <div class="table-chart-control-row table-chart-options-row">
             <label>
               <input type="checkbox" id="table-chart-horizontal">
               Horizontal
@@ -555,17 +568,6 @@
               <input type="checkbox" id="table-chart-stacked">
               Stacked
             </label>
-          </div>
-          <div class="table-chart-control-row table-chart-view-row">
-            <span class="table-chart-view-label">View Data:</span>
-            <div class="table-chart-toggle">
-              <button id="table-chart-view-columns" class="active">
-                <span class="toggle-icon">↓</span> By Columns
-              </button>
-              <button id="table-chart-view-rows">
-                <span class="toggle-icon">→</span> By Rows
-              </button>
-            </div>
             <span class="table-chart-view-hint" id="table-chart-view-hint"></span>
           </div>
           <div class="table-chart-control-row">
