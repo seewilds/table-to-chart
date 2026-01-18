@@ -534,6 +534,9 @@
           <button class="table-chart-close">&times;</button>
         </div>
         <div class="table-chart-info" id="table-chart-info"></div>
+        <div class="table-chart-canvas-container">
+          <canvas id="table-chart-canvas"></canvas>
+        </div>
         <div class="table-chart-controls">
           <div class="table-chart-toolbar">
             <div class="toolbar-group">
@@ -566,9 +569,6 @@
             <select id="table-chart-series" multiple size="4"></select>
             <span class="table-chart-series-hint">Ctrl/Cmd to multi-select</span>
           </div>
-        </div>
-        <div class="table-chart-canvas-container">
-          <canvas id="table-chart-canvas"></canvas>
         </div>
       </div>
     `;
