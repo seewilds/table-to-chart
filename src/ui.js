@@ -58,6 +58,10 @@ function createModal() {
             <span id="table-chart-series-label" class="toolbar-label">Series:</span>
             <select id="table-chart-series" multiple size="4"></select>
           </div>
+          <div class="toolbar-group" id="table-chart-row-group">
+            <span class="toolbar-label">Rows:</span>
+            <select id="table-chart-rows" multiple size="4"></select>
+          </div>
           <div class="toolbar-group" id="table-chart-label-group">
             <span class="toolbar-label">Labels:</span>
             <select id="table-chart-label-column"></select>
@@ -75,6 +79,7 @@ function createModal() {
   TC.modal.querySelector('#table-chart-type').addEventListener('change', updateChart);
   TC.modal.querySelector('#table-chart-palette').addEventListener('change', updateChart);
   TC.modal.querySelector('#table-chart-series').addEventListener('change', updateChart);
+  TC.modal.querySelector('#table-chart-rows').addEventListener('change', updateChart);
   TC.modal.querySelector('#table-chart-label-column').addEventListener('change', onLabelColumnChange);
 
   // Toggle buttons
@@ -141,6 +146,7 @@ function setViewMode(mode) {
   // Update the view
   updateViewHint();
   populateSeriesSelector();
+  populateRowSelector();
   updateChart();
 }
 
@@ -205,6 +211,61 @@ function getSelectedSeries() {
   return Array.from(select.selectedOptions).map(opt => parseInt(opt.value));
 }
 
+// Populate X-axis filter selector (Rows in columns mode, Columns in rows mode)
+function populateRowSelector() {
+  const select = document.getElementById('table-chart-rows');
+  const group = document.getElementById('table-chart-row-group');
+  const label = group.querySelector('.toolbar-label');
+
+  if (!TC.parsedData) return;
+
+  group.style.display = 'flex';
+  select.innerHTML = '';
+
+  if (TC.viewMode === 'columns') {
+    // Filter rows on X-axis
+    label.textContent = 'Rows:';
+    TC.parsedData.rowLabels.forEach((rowLabel, index) => {
+      const option = document.createElement('option');
+      option.value = index;
+      option.textContent = TC.parsedData.rowDisplayNames[index] || rowLabel;
+      option.selected = true;
+      select.appendChild(option);
+    });
+    select.size = Math.min(Math.max(TC.parsedData.rowLabels.length, 2), 8);
+  } else {
+    // Filter columns on X-axis (rows mode)
+    label.textContent = 'Columns:';
+    TC.parsedData.dataColumnHeaders.forEach((colHeader, index) => {
+      const option = document.createElement('option');
+      option.value = index;
+      option.textContent = TC.parsedData.columnDisplayNames[index] || colHeader;
+      option.selected = true;
+      select.appendChild(option);
+    });
+    select.size = Math.min(Math.max(TC.parsedData.dataColumnHeaders.length, 2), 8);
+  }
+}
+
+// Get selected X-axis filter indices (rows in columns mode, columns in rows mode)
+function getSelectedRows() {
+  const select = document.getElementById('table-chart-rows');
+  if (!select || !TC.parsedData) return [];
+
+  const selected = Array.from(select.selectedOptions).map(opt => parseInt(opt.value));
+
+  // If nothing selected, return all
+  if (selected.length === 0) {
+    if (TC.viewMode === 'columns') {
+      return TC.parsedData.rowLabels.map((_, i) => i);
+    } else {
+      return TC.parsedData.dataColumnHeaders.map((_, i) => i);
+    }
+  }
+
+  return selected;
+}
+
 // Populate the label column dropdown with all columns
 function populateLabelColumnSelector() {
   const select = document.getElementById('table-chart-label-column');
@@ -242,6 +303,7 @@ function getSelectedLabelColumn() {
 function onLabelColumnChange() {
   TC.rebuildSeriesFromSelection();
   populateSeriesSelector();
+  populateRowSelector();
   TC.updateChart();
 }
 
@@ -255,6 +317,8 @@ window.TableChart.updateViewHint = updateViewHint;
 window.TableChart.updateInfo = updateInfo;
 window.TableChart.populateSeriesSelector = populateSeriesSelector;
 window.TableChart.getSelectedSeries = getSelectedSeries;
+window.TableChart.populateRowSelector = populateRowSelector;
+window.TableChart.getSelectedRows = getSelectedRows;
 window.TableChart.populateLabelColumnSelector = populateLabelColumnSelector;
 window.TableChart.getSelectedLabelColumn = getSelectedLabelColumn;
 window.TableChart.onLabelColumnChange = onLabelColumnChange;

@@ -209,11 +209,17 @@ function updateChart() {
   }
 
   // Use display labels (deduplicated) for cleaner axis labels
-  const axisLabels = view.displayLabels || view.labels;
+  const allAxisLabels = view.displayLabels || view.labels;
+
+  // Filter X-axis labels (rows in columns mode, columns in rows mode)
+  const selectedRowIndices = TC.getSelectedRows();
+  const axisLabels = selectedRowIndices.map(i => allAxisLabels[i]);
 
   // Build datasets
   const datasets = selectedSeries.map((series, idx) => {
-    const validData = series.data.map((v, i) => ({
+    // Filter series data to only selected X-axis items
+    const filteredData = selectedRowIndices.map(i => series.data[i]);
+    const validData = filteredData.map((v, i) => ({
       value: v,
       label: axisLabels[i]
     })).filter(d => !isNaN(d.value));
@@ -223,7 +229,7 @@ function updateChart() {
       label: series.displayName || series.name,
       data: isPieType
         ? validData.map(d => d.value)
-        : series.data,
+        : filteredData,
       backgroundColor: isPieType
         ? generateColors(validData.length, 0.8, palette)
         : generateColors(selectedSeries.length, 0.8, palette)[idx],
@@ -239,11 +245,12 @@ function updateChart() {
   // For pie charts, use the first selected series and filter valid data
   let labels = axisLabels;
   if (isPieType && selectedSeries.length > 0) {
-    const validIndices = selectedSeries[0].data
+    const filteredSeriesData = selectedRowIndices.map(i => selectedSeries[0].data[i]);
+    const validIndices = filteredSeriesData
       .map((v, i) => !isNaN(v) ? i : -1)
       .filter(i => i >= 0);
     labels = validIndices.map(i => axisLabels[i]);
-    datasets[0].data = validIndices.map(i => selectedSeries[0].data[i]);
+    datasets[0].data = validIndices.map(i => filteredSeriesData[i]);
   }
 
   // Build chart title from metadata

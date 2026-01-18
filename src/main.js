@@ -37,6 +37,7 @@ function handleTableClick(e) {
   TC.updateInfo();
   TC.updateViewHint();
   TC.populateSeriesSelector();
+  TC.populateRowSelector();
   TC.updateChart();
 }
 
