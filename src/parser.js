@@ -482,7 +482,7 @@ class TableParser {
 
       for (let row = 0; row < this.headerRowCount; row++) {
         const cell = this.grid[row] && this.grid[row][col];
-        if (cell && cell.text) {
+        if (cell && this.isMeaningfulText(cell.text)) {
           // Avoid duplicating text from spanning cells
           const lastPart = headerParts[headerParts.length - 1];
           if (cell.text !== lastPart) {
