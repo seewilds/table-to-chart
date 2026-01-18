@@ -1,6 +1,113 @@
 // Chart Module - Chart rendering and updates
 // Depends on: namespace.js
 
+// Build row labels from a specific column
+function buildRowLabelsForColumn(labelColIndex) {
+  if (!TC.parsedData) return [];
+
+  const labels = [];
+  TC.parsedData.rawGrid.forEach((row, rowIndex) => {
+    if (TC.parsedData.rowTypes[rowIndex] !== 'data' || !row) return;
+
+    const cell = row[labelColIndex];
+    labels.push(cell && cell.text ? cell.text : `Row ${labels.length + 1}`);
+  });
+
+  return labels;
+}
+
+// Rebuild series data based on user-selected label column
+function rebuildSeriesFromSelection() {
+  if (!TC.parsedData || !TC.parsedData.allColumns) return;
+
+  const labelColIndex = TC.getSelectedLabelColumn();
+  const allColumns = TC.parsedData.allColumns;
+
+  // Build new row labels from selected column
+  const newRowLabels = buildRowLabelsForColumn(labelColIndex);
+  const rowDedup = deduplicateLabels(newRowLabels);
+
+  // Determine which columns are chartable (numeric, not the label column, not text-only)
+  const chartableColumns = allColumns.filter(col =>
+    col.index !== labelColIndex &&
+    col.numericRatio > 0.5 &&
+    !col.isTextOnly
+  );
+
+  // Extract data rows with all columns (not just excluding auto-detected label columns)
+  const dataRows = [];
+  TC.parsedData.rawGrid.forEach((row, rowIndex) => {
+    if (TC.parsedData.rowTypes[rowIndex] !== 'data' || !row) return;
+
+    const values = [];
+    for (let c = 0; c < row.length; c++) {
+      const cell = row[c];
+      values.push({
+        value: cell ? cell.numeric.value : NaN,
+        display: cell ? cell.text : '',
+        isNumeric: cell ? cell.numeric.isNumeric : false
+      });
+    }
+    dataRows.push(values);
+  });
+
+  // Build chartable column headers (only numeric columns, excluding label)
+  const chartableHeaders = chartableColumns.map(col => col.header);
+  const columnDedup = deduplicateHeaders(chartableHeaders);
+
+  // Build series by columns
+  const seriesByColumn = [];
+  chartableColumns.forEach((col, idx) => {
+    const seriesData = dataRows.map(row => {
+      const cell = row[col.index];
+      return cell ? cell.value : NaN;
+    });
+
+    const numericCount = seriesData.filter(v => !isNaN(v)).length;
+    if (numericCount > 0) {
+      seriesByColumn.push({
+        name: col.header,
+        displayName: columnDedup.displayNames[idx],
+        data: seriesData,
+        index: idx
+      });
+    }
+  });
+
+  // Build series by rows
+  const seriesByRow = [];
+  newRowLabels.forEach((label, rowIdx) => {
+    const seriesData = chartableColumns.map(col => {
+      const cell = dataRows[rowIdx][col.index];
+      return cell ? cell.value : NaN;
+    });
+
+    const numericCount = seriesData.filter(v => !isNaN(v)).length;
+    if (numericCount > 0) {
+      seriesByRow.push({
+        name: label,
+        displayName: rowDedup.displayNames[rowIdx],
+        data: seriesData,
+        index: rowIdx
+      });
+    }
+  });
+
+  // Update parsed data with rebuilt series
+  TC.parsedData.rowLabels = newRowLabels;
+  TC.parsedData.rowDisplayNames = rowDedup.displayNames;
+  TC.parsedData.rowMetadata = { prefix: rowDedup.commonPrefix, suffix: rowDedup.commonSuffix };
+  TC.parsedData.dataColumnHeaders = chartableHeaders;
+  TC.parsedData.columnDisplayNames = columnDedup.displayNames;
+  TC.parsedData.columnMetadata = { parts: columnDedup.metadata, title: columnDedup.title };
+  TC.parsedData.seriesByColumn = seriesByColumn;
+  TC.parsedData.seriesByRow = seriesByRow;
+  TC.parsedData.labelColumnIndex = labelColIndex;
+
+  // Update info display
+  TC.updateInfo();
+}
+
 // Get the current view's series and labels based on viewMode
 function getCurrentView() {
   if (!TC.parsedData) return null;
@@ -178,7 +285,11 @@ function updateChart() {
 window.getCurrentView = getCurrentView;
 window.generateColors = generateColors;
 window.updateChart = updateChart;
+window.buildRowLabelsForColumn = buildRowLabelsForColumn;
+window.rebuildSeriesFromSelection = rebuildSeriesFromSelection;
 
 window.TableChart.getCurrentView = getCurrentView;
 window.TableChart.generateColors = generateColors;
 window.TableChart.updateChart = updateChart;
+window.TableChart.buildRowLabelsForColumn = buildRowLabelsForColumn;
+window.TableChart.rebuildSeriesFromSelection = rebuildSeriesFromSelection;

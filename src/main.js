@@ -30,6 +30,10 @@ function handleTableClick(e) {
   document.getElementById('table-chart-view-columns').classList.add('active');
   document.getElementById('table-chart-view-rows').classList.remove('active');
 
+  // Initialize label column selector and rebuild series
+  TC.populateLabelColumnSelector();
+  TC.rebuildSeriesFromSelection();
+
   TC.updateInfo();
   TC.updateViewHint();
   TC.populateSeriesSelector();

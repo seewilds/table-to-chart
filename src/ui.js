@@ -30,23 +30,27 @@ function createModal() {
             </select>
           </div>
           <div class="toolbar-group">
-            <span class="toolbar-label">View:</span>
+            <span class="toolbar-label">Options:</span>
+            <div class="btn-group">
+              <button id="table-chart-horizontal" class="toggle-btn">Horizontal</button>
+              <button id="table-chart-stacked" class="toggle-btn">Stacked</button>
+            </div>
+          </div>
+          <div class="toolbar-group" id="table-chart-label-group">
+            <span class="toolbar-label">Labels:</span>
+            <select id="table-chart-label-column"></select>
+          </div>
+          <div class="toolbar-group">
+            <span class="toolbar-label">Plot:</span>
             <div class="btn-group">
               <button id="table-chart-view-columns" class="toggle-btn active">Columns</button>
               <button id="table-chart-view-rows" class="toggle-btn">Rows</button>
             </div>
           </div>
           <div class="toolbar-group">
-            <div class="btn-group">
-              <button id="table-chart-horizontal" class="toggle-btn">Horizontal</button>
-              <button id="table-chart-stacked" class="toggle-btn">Stacked</button>
-            </div>
+            <span id="table-chart-series-label" class="toolbar-label">Series:</span>
+            <select id="table-chart-series" multiple size="4"></select>
           </div>
-        </div>
-        <div class="table-chart-series-row">
-          <span id="table-chart-series-label" class="toolbar-label">Series:</span>
-          <select id="table-chart-series" multiple size="4"></select>
-          <span class="table-chart-series-hint">Ctrl/Cmd to multi-select</span>
         </div>
       </div>
     </div>
@@ -59,6 +63,7 @@ function createModal() {
   TC.modal.querySelector('.table-chart-overlay').addEventListener('click', closeModal);
   TC.modal.querySelector('#table-chart-type').addEventListener('change', updateChart);
   TC.modal.querySelector('#table-chart-series').addEventListener('change', updateChart);
+  TC.modal.querySelector('#table-chart-label-column').addEventListener('change', onLabelColumnChange);
 
   // Toggle buttons
   TC.modal.querySelector('#table-chart-view-columns').addEventListener('click', () => setViewMode('columns'));
@@ -188,6 +193,46 @@ function getSelectedSeries() {
   return Array.from(select.selectedOptions).map(opt => parseInt(opt.value));
 }
 
+// Populate the label column dropdown with all columns
+function populateLabelColumnSelector() {
+  const select = document.getElementById('table-chart-label-column');
+  if (!TC.parsedData || !TC.parsedData.allColumns) return;
+
+  select.innerHTML = '';
+
+  TC.parsedData.allColumns.forEach(col => {
+    const option = document.createElement('option');
+    option.value = col.index;
+
+    // Build display text with hints
+    let displayText = col.header;
+    if (col.isNumericSequence) {
+      displayText += ' (1,2,3...)';
+    } else if (col.isTextOnly) {
+      displayText += ' (text)';
+    } else if (col.numericRatio > 0.5) {
+      displayText += ' (numeric)';
+    }
+
+    option.textContent = displayText;
+    option.selected = col.index === TC.parsedData.labelColumnIndex;
+    select.appendChild(option);
+  });
+}
+
+// Get the currently selected label column index
+function getSelectedLabelColumn() {
+  const select = document.getElementById('table-chart-label-column');
+  return parseInt(select.value);
+}
+
+// Handle label column change
+function onLabelColumnChange() {
+  TC.rebuildSeriesFromSelection();
+  populateSeriesSelector();
+  TC.updateChart();
+}
+
 // Export to namespace
 window.TableChart.createModal = createModal;
 window.TableChart.showModal = showModal;
@@ -198,3 +243,6 @@ window.TableChart.updateViewHint = updateViewHint;
 window.TableChart.updateInfo = updateInfo;
 window.TableChart.populateSeriesSelector = populateSeriesSelector;
 window.TableChart.getSelectedSeries = getSelectedSeries;
+window.TableChart.populateLabelColumnSelector = populateLabelColumnSelector;
+window.TableChart.getSelectedLabelColumn = getSelectedLabelColumn;
+window.TableChart.onLabelColumnChange = onLabelColumnChange;

@@ -319,6 +319,99 @@ class TableParser {
     return columnTypes;
   }
 
+  // Build metadata for each column to support user-selectable label column
+  buildColumnMetadata(columnHeaders) {
+    const colCount = Math.max(...this.grid.map(r => r ? r.length : 0));
+    const metadata = [];
+
+    for (let col = 0; col < colCount; col++) {
+      let numericCount = 0;
+      let textCount = 0;
+      let dataRowCount = 0;
+      const values = [];
+
+      this.grid.forEach((row, rowIndex) => {
+        if (this.rowTypes[rowIndex] !== 'data' || !row || !row[col]) return;
+
+        dataRowCount++;
+        const cell = row[col];
+        values.push(cell);
+
+        if (cell.numeric.isNumeric && !cell.numeric.isYear) {
+          numericCount++;
+        } else if (cell.text && cell.text.length > 0) {
+          textCount++;
+        }
+      });
+
+      const numericRatio = dataRowCount > 0 ? numericCount / dataRowCount : 0;
+      const isTextOnly = numericRatio === 0 && textCount > 0;
+
+      // Check if this column is a numeric sequence (1, 2, 3, ...)
+      const isNumericSequence = this.isNumericSequence(values);
+
+      metadata.push({
+        index: col,
+        header: columnHeaders[col] || `Column ${col + 1}`,
+        columnType: this.columnTypes[col] || 'unknown',
+        isTextOnly,
+        isNumericSequence,
+        numericRatio
+      });
+    }
+
+    return metadata;
+  }
+
+  // Check if a column contains a sequential numeric pattern (1, 2, 3, ...)
+  isNumericSequence(cells) {
+    if (cells.length < 3) return false;
+
+    const numericValues = cells
+      .filter(c => c && c.numeric.isNumeric)
+      .map(c => c.numeric.value);
+
+    if (numericValues.length < cells.length * 0.8) return false;
+
+    // Check if it's a sequence starting from 1 or 0
+    const sorted = [...numericValues].sort((a, b) => a - b);
+    if (sorted[0] !== 0 && sorted[0] !== 1) return false;
+
+    // Check if consecutive integers
+    for (let i = 1; i < sorted.length; i++) {
+      if (sorted[i] !== sorted[i - 1] + 1) return false;
+    }
+
+    return true;
+  }
+
+  // Select the best default label column
+  selectDefaultLabelColumn(columnMetadata) {
+    // First preference: text-only column that isn't a sequence
+    for (const col of columnMetadata) {
+      if (col.isTextOnly && !col.isNumericSequence) {
+        return col.index;
+      }
+    }
+
+    // Second preference: any non-numeric column that isn't a sequence
+    for (const col of columnMetadata) {
+      if (col.columnType === 'label' && !col.isNumericSequence) {
+        return col.index;
+      }
+    }
+
+    // Third preference: first label column (even if sequence)
+    for (const col of columnMetadata) {
+      if (col.columnType === 'label') {
+        return col.index;
+      }
+    }
+
+    // Fall back to first column
+    return 0;
+  }
+
   // Build column headers from header rows
   buildColumnHeaders() {
     const headers = [];
@@ -353,6 +446,11 @@ class TableParser {
     this.classifyColumns();
 
     const columnHeaders = this.buildColumnHeaders();
+
+    // Build column metadata for user-selectable label column feature
+    const allColumns = this.buildColumnMetadata(columnHeaders);
+    const labelColumnIndex = this.selectDefaultLabelColumn(allColumns);
+
     const dataRows = [];
     const rowLabels = [];
 
@@ -438,7 +536,9 @@ class TableParser {
       labelColumnCount: this.labelColumnCount,
       rawGrid: this.grid,
       rowTypes: this.rowTypes,
-      columnTypes: this.columnTypes
+      columnTypes: this.columnTypes,
+      allColumns,
+      labelColumnIndex
     };
   }
 }
