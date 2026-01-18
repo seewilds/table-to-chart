@@ -49,52 +49,43 @@ table.table-chart-highlight {
   flex-direction: column !important;
 }
 
-/* Header */
-.table-chart-header {
+/* Info bar (also drag handle) */
+.table-chart-info {
   display: flex !important;
   justify-content: space-between !important;
   align-items: center !important;
-  padding: 16px 20px !important;
-  background: linear-gradient(135deg, #4285f4, #34a853) !important;
-  color: white !important;
+  padding: 10px 16px !important;
+  background: #e8f0fe !important;
+  font-size: 13px !important;
   cursor: grab !important;
   user-select: none !important;
+  border-radius: 12px 12px 0 0 !important;
 }
 
-.table-chart-container.dragging .table-chart-header {
+.table-chart-container.dragging .table-chart-info {
   cursor: grabbing !important;
 }
 
-.table-chart-header h3 {
-  margin: 0 !important;
-  font-size: 18px !important;
-  font-weight: 600 !important;
-  color: white !important;
-}
-
 .table-chart-close {
-  background: rgba(255,255,255,0.2) !important;
+  background: none !important;
   border: none !important;
-  color: white !important;
-  font-size: 24px !important;
+  color: #666 !important;
+  font-size: 20px !important;
   cursor: pointer !important;
-  padding: 4px 10px !important;
+  padding: 2px 8px !important;
   line-height: 1 !important;
-  border-radius: 6px !important;
+  border-radius: 4px !important;
   transition: background 0.2s !important;
 }
 
 .table-chart-close:hover {
-  background: rgba(255,255,255,0.3) !important;
+  background: rgba(0,0,0,0.1) !important;
+  color: #333 !important;
 }
 
-/* Info bar */
-.table-chart-info {
-  padding: 10px 20px !important;
-  background: #e8f0fe !important;
-  border-bottom: 1px solid #d2e3fc !important;
-  font-size: 13px !important;
+.table-chart-info-text {
   color: #1967d2 !important;
+  flex: 1 !important;
 }
 
 /* Controls */
@@ -217,14 +208,21 @@ table.table-chart-highlight {
     background: #1e1e1e !important;
   }
 
-  .table-chart-header {
-    background: linear-gradient(135deg, #2d5aa0, #2e7d4a) !important;
+  .table-chart-info {
+    background: #2d3748 !important;
   }
 
-  .table-chart-info {
-    background: #1a3a5c !important;
-    border-bottom-color: #2d5aa0 !important;
+  .table-chart-info-text {
     color: #8ab4f8 !important;
+  }
+
+  .table-chart-close {
+    color: #aaa !important;
+  }
+
+  .table-chart-close:hover {
+    background: rgba(255,255,255,0.1) !important;
+    color: #fff !important;
   }
 
   .table-chart-controls {

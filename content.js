@@ -534,11 +534,10 @@
     modal.innerHTML = `
       <div class="table-chart-overlay"></div>
       <div class="table-chart-container">
-        <div class="table-chart-header">
-          <h3>Table Data Visualization</h3>
+        <div class="table-chart-info" id="table-chart-info">
+          <span class="table-chart-info-text"></span>
           <button class="table-chart-close">&times;</button>
         </div>
-        <div class="table-chart-info" id="table-chart-info"></div>
         <div class="table-chart-canvas-container">
           <canvas id="table-chart-canvas"></canvas>
         </div>
@@ -593,10 +592,10 @@
     modal.querySelector('#table-chart-stacked').addEventListener('click', toggleOption);
 
     // Drag functionality
-    const header = modal.querySelector('.table-chart-header');
+    const infoBar = modal.querySelector('.table-chart-info');
     const container = modal.querySelector('.table-chart-container');
 
-    header.addEventListener('mousedown', (e) => {
+    infoBar.addEventListener('mousedown', (e) => {
       if (e.target.closest('.table-chart-close')) return;
       isDragging = true;
       const rect = container.getBoundingClientRect();
@@ -700,15 +699,13 @@
 
   // Update the UI with parsed data info
   function updateInfo() {
-    const info = document.getElementById('table-chart-info');
-    if (!parsedData) return;
+    const infoText = document.querySelector('.table-chart-info-text');
+    if (!parsedData || !infoText) return;
 
     const metaTitle = parsedData.columnMetadata.title;
     const metaInfo = metaTitle ? `<strong>${metaTitle}</strong> | ` : '';
 
-    info.innerHTML = `
-      <span>${metaInfo}${parsedData.rowLabels.length} rows × ${parsedData.dataColumnHeaders.length} columns</span>
-    `;
+    infoText.innerHTML = `${metaInfo}${parsedData.rowLabels.length} rows × ${parsedData.dataColumnHeaders.length} columns`;
   }
 
   // Populate series selector based on current view mode
