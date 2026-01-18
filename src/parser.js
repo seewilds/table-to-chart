@@ -88,6 +88,8 @@ class TableParser {
       // For element nodes, check if hidden before processing children
       if (node.nodeType === Node.ELEMENT_NODE) {
         if (this.isElementHidden(node)) return;
+        if (node.tagName === 'SUP') return;
+        if (node.classList && (node.classList.contains('reference') || node.classList.contains('mw-ref'))) return;
 
         // Process children
         for (const child of node.childNodes) {
@@ -107,11 +109,54 @@ class TableParser {
     // Remove common noise patterns that appear across many sites
     text = text
       .replace(/^\s*[—–-]\s*$/, '')  // Standalone dashes (N/A indicators)
-      .replace(/\[\d+\]/g, '')        // Reference markers like [1], [2]
+      .replace(/\[[^\]]*\]/g, '')     // Bracketed references like [1], [n 1]
       .replace(/\s*\[\s*edit\s*\]\s*/gi, '')  // [edit] links
       .trim();
 
+    text = this.stripTrailingParentheticals(text);
+
     return text;
+  }
+
+  stripTrailingParentheticals(text) {
+    let updated = text;
+    const trailing = /\s*\(([^)]*)\)\s*$/;
+    while (true) {
+      const match = updated.match(trailing);
+      if (!match) break;
+      const content = match[1].trim();
+      const hasDigit = /\d/.test(content);
+      const hasUnit = /[%$€£¥₹₽₩]/.test(content);
+      const wordCount = content ? content.split(/\s+/).length : 0;
+      const isShort = content.length <= 10 && wordCount <= 2;
+      if (!content || (!hasDigit && !hasUnit && isShort)) {
+        updated = updated.replace(trailing, '').trim();
+        continue;
+      }
+      break;
+    }
+    return updated;
+  }
+
+  isMeaningfulText(text) {
+    return Boolean(text && text.trim().length > 0);
+  }
+
+  rowHasMeaningfulText(row) {
+    return row.some(cell => cell && this.isMeaningfulText(cell.text));
+  }
+
+  getExplicitHeaderRowCount() {
+    if (!this.table.tHead || this.table.tHead.rows.length === 0) return 0;
+    const theadRows = this.table.tHead.rows.length;
+    let lastMeaningfulIndex = -1;
+    for (let i = 0; i < theadRows; i++) {
+      const row = this.grid[i];
+      if (row && this.rowHasMeaningfulText(row)) {
+        lastMeaningfulIndex = i;
+      }
+    }
+    return lastMeaningfulIndex >= 0 ? lastMeaningfulIndex + 1 : 0;
   }
 
   // Build a normalized grid handling colspan/rowspan
@@ -210,7 +255,7 @@ class TableParser {
     const rowTypes = [];
 
     this.grid.forEach((row, rowIndex) => {
-      if (!row || row.length === 0) {
+      if (!row || row.length === 0 || !this.rowHasMeaningfulText(row)) {
         rowTypes[rowIndex] = 'empty';
         return;
       }
@@ -459,6 +504,11 @@ class TableParser {
     this.buildGrid();
     this.classifyRows();
     this.classifyColumns();
+
+    const explicitHeaderRowCount = this.getExplicitHeaderRowCount();
+    if (explicitHeaderRowCount > 0) {
+      this.headerRowCount = explicitHeaderRowCount;
+    }
 
     const columnHeaders = this.buildColumnHeaders();
 
