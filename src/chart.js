@@ -259,6 +259,9 @@ function updateChart() {
   if (!chartTitle && selectedSeries.length <= 3) {
     chartTitle = selectedSeries.map(s => s.displayName || s.name).join(', ');
   }
+  if (!chartTitle && TC.parsedData) {
+    chartTitle = `${TC.parsedData.rowLabels.length} rows × ${TC.parsedData.dataColumnHeaders.length} columns`;
+  }
 
   const chartConfig = {
     type: chartType === 'bar' ? 'bar' : chartType,
