@@ -45,6 +45,7 @@ function createModal() {
             <div class="btn-group">
               <button id="table-chart-horizontal" class="toggle-btn">Horizontal</button>
               <button id="table-chart-stacked" class="toggle-btn">Stacked</button>
+              <button id="table-chart-legend" class="toggle-btn active">Legend</button>
             </div>
           </div>
           <div class="toolbar-group">
@@ -97,6 +98,7 @@ function createModal() {
   TC.modal.querySelector('#table-chart-view-rows').addEventListener('click', () => setViewMode('rows'));
   TC.modal.querySelector('#table-chart-horizontal').addEventListener('click', toggleOption);
   TC.modal.querySelector('#table-chart-stacked').addEventListener('click', toggleOption);
+  TC.modal.querySelector('#table-chart-legend').addEventListener('click', toggleOption);
 
   setAdvancedVisible(false);
 

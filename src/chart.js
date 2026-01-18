@@ -184,6 +184,7 @@ function updateChart() {
   const chartType = document.getElementById('table-chart-type').value;
   const horizontal = document.getElementById('table-chart-horizontal').classList.contains('active');
   const stacked = document.getElementById('table-chart-stacked').classList.contains('active');
+  const showLegend = document.getElementById('table-chart-legend').classList.contains('active');
   const palette = document.getElementById('table-chart-palette').value;
   let selectedIndices = TC.getSelectedSeries();
 
@@ -271,7 +272,7 @@ function updateChart() {
       indexAxis: (chartType === 'bar' && horizontal) ? 'y' : 'x',
       plugins: {
         legend: {
-          display: true,
+          display: showLegend,
           position: isPieType ? 'right' : 'top'
         },
         title: {
