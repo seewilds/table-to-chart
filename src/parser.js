@@ -11,6 +11,94 @@ class TableParser {
     this.labelColumnCount = 0;
   }
 
+  // Check if an element is visually hidden using computed styles
+  isElementHidden(element) {
+    // Skip non-element nodes
+    if (element.nodeType !== Node.ELEMENT_NODE) return false;
+
+    // Check aria-hidden attribute (universal accessibility pattern)
+    if (element.getAttribute('aria-hidden') === 'true') return true;
+
+    // These tags never contain visible text
+    const hiddenTags = ['STYLE', 'SCRIPT', 'NOSCRIPT', 'TEMPLATE'];
+    if (hiddenTags.includes(element.tagName)) return true;
+
+    // Check computed styles for common hiding techniques
+    const style = window.getComputedStyle(element);
+
+    // Standard hiding
+    if (style.display === 'none') return true;
+    if (style.visibility === 'hidden') return true;
+    if (style.opacity === '0') return true;
+
+    // Screen-reader-only patterns (clip-based hiding)
+    // These elements are visible to screen readers but not to users
+    const clip = style.clip;
+    if (clip === 'rect(0px, 0px, 0px, 0px)' || clip === 'rect(1px, 1px, 1px, 1px)') return true;
+
+    const clipPath = style.clipPath;
+    if (clipPath === 'inset(50%)' || clipPath === 'inset(100%)') return true;
+
+    // Zero-size with overflow hidden (another sr-only pattern)
+    const width = parseFloat(style.width);
+    const height = parseFloat(style.height);
+    if ((width === 0 || height === 0) && style.overflow === 'hidden') return true;
+
+    // Off-screen positioning (negative margins/positions used for sr-only)
+    const position = style.position;
+    if (position === 'absolute' || position === 'fixed') {
+      const left = parseFloat(style.left);
+      const top = parseFloat(style.top);
+      if (left < -9000 || top < -9000) return true;
+    }
+
+    return false;
+  }
+
+  // Extract visible text from a cell using computed styles
+  extractVisibleText(element) {
+    const textParts = [];
+
+    // Recursive function to traverse and collect visible text
+    const traverse = (node) => {
+      // For text nodes, add the text if parent chain is visible
+      if (node.nodeType === Node.TEXT_NODE) {
+        const text = node.textContent;
+        if (text && text.trim()) {
+          textParts.push(text);
+        }
+        return;
+      }
+
+      // For element nodes, check if hidden before processing children
+      if (node.nodeType === Node.ELEMENT_NODE) {
+        if (this.isElementHidden(node)) return;
+
+        // Process children
+        for (const child of node.childNodes) {
+          traverse(child);
+        }
+      }
+    };
+
+    traverse(element);
+
+    // Join and clean up
+    let text = textParts.join(' ');
+
+    // Normalize whitespace
+    text = text.replace(/\s+/g, ' ').trim();
+
+    // Remove common noise patterns that appear across many sites
+    text = text
+      .replace(/^\s*[—–-]\s*$/, '')  // Standalone dashes (N/A indicators)
+      .replace(/\[\d+\]/g, '')        // Reference markers like [1], [2]
+      .replace(/\s*\[\s*edit\s*\]\s*/gi, '')  // [edit] links
+      .trim();
+
+    return text;
+  }
+
   // Build a normalized grid handling colspan/rowspan
   buildGrid() {
     const rows = this.table.querySelectorAll('tr');
@@ -32,7 +120,7 @@ class TableParser {
 
         const colspan = parseInt(cell.getAttribute('colspan')) || 1;
         const rowspan = parseInt(cell.getAttribute('rowspan')) || 1;
-        const text = cell.textContent.trim();
+        const text = this.extractVisibleText(cell);
         const isHeader = cell.tagName.toLowerCase() === 'th';
 
         const cellData = {
