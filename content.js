@@ -306,6 +306,10 @@
       // Get data column headers (excluding label columns)
       const dataColumnHeaders = columnHeaders.slice(this.labelColumnCount);
 
+      // Deduplicate headers and labels
+      const columnDedup = deduplicateHeaders(dataColumnHeaders);
+      const rowDedup = deduplicateLabels(rowLabels);
+
       // Build series by columns (each data column becomes a series)
       const seriesByColumn = [];
       for (let c = 0; c < dataColumnHeaders.length; c++) {
@@ -318,6 +322,7 @@
         if (numericCount > 0) {
           seriesByColumn.push({
             name: dataColumnHeaders[c],
+            displayName: columnDedup.displayNames[c],
             data: seriesData,
             index: c
           });
@@ -332,6 +337,7 @@
         if (numericCount > 0) {
           seriesByRow.push({
             name: label,
+            displayName: rowDedup.displayNames[rowIdx],
             data: seriesData,
             index: rowIdx
           });
@@ -340,8 +346,12 @@
 
       return {
         rowLabels,
+        rowDisplayNames: rowDedup.displayNames,
+        rowMetadata: { prefix: rowDedup.commonPrefix, suffix: rowDedup.commonSuffix },
         columnHeaders,
         dataColumnHeaders,
+        columnDisplayNames: columnDedup.displayNames,
+        columnMetadata: { parts: columnDedup.metadata, title: columnDedup.title },
         seriesByColumn,
         seriesByRow,
         dataRows,
@@ -352,6 +362,128 @@
         columnTypes: this.columnTypes
       };
     }
+  }
+
+  // ============================================================
+  // HEADER DEDUPLICATION
+  // ============================================================
+
+  // Extract common parts from header strings and return simplified names + metadata
+  function deduplicateHeaders(headers, separator = ' > ') {
+    if (!headers || headers.length === 0) {
+      return { displayNames: [], metadata: [], title: '' };
+    }
+
+    if (headers.length === 1) {
+      return {
+        displayNames: [headers[0]],
+        metadata: [],
+        title: ''
+      };
+    }
+
+    // Split each header into parts
+    const splitHeaders = headers.map(h => h.split(separator).map(p => p.trim()));
+
+    // Find max parts length
+    const maxParts = Math.max(...splitHeaders.map(h => h.length));
+
+    // For each position, check if all headers have the same value
+    const commonParts = [];
+    const uniquePositions = [];
+
+    for (let pos = 0; pos < maxParts; pos++) {
+      const valuesAtPos = splitHeaders.map(h => h[pos] || '');
+      const uniqueValues = new Set(valuesAtPos.filter(v => v !== ''));
+
+      if (uniqueValues.size === 1 && valuesAtPos.every(v => v === valuesAtPos[0])) {
+        // All same - this is common/metadata
+        commonParts.push(valuesAtPos[0]);
+      } else if (uniqueValues.size > 1) {
+        // Different values - this position is unique
+        uniquePositions.push(pos);
+      }
+    }
+
+    // Build display names from unique positions only
+    const displayNames = splitHeaders.map(parts => {
+      const uniqueParts = uniquePositions.map(pos => parts[pos] || '').filter(p => p);
+      return uniqueParts.join(separator) || parts.join(separator);
+    });
+
+    // Build title from common parts (filter out generic ones)
+    const meaningfulCommon = commonParts.filter(part => {
+      const lower = part.toLowerCase();
+      // Skip very generic terms
+      return !['dollars', 'units', 'number', 'count', 'value', 'values'].includes(lower);
+    });
+
+    const title = meaningfulCommon.join(' - ');
+
+    return {
+      displayNames,
+      metadata: commonParts,
+      title,
+      uniquePositions
+    };
+  }
+
+  // Also deduplicate row labels if they have common prefixes/suffixes
+  function deduplicateLabels(labels) {
+    if (!labels || labels.length < 2) {
+      return { displayNames: labels || [], commonPrefix: '', commonSuffix: '' };
+    }
+
+    // Find common prefix
+    let commonPrefix = '';
+    const first = labels[0];
+    for (let i = 0; i < first.length; i++) {
+      const char = first[i];
+      if (labels.every(l => l[i] === char)) {
+        commonPrefix += char;
+      } else {
+        break;
+      }
+    }
+
+    // Only use prefix if it ends at a word boundary and is meaningful
+    const prefixMatch = commonPrefix.match(/^(.+[\s\-:>])/);
+    commonPrefix = prefixMatch ? prefixMatch[1] : '';
+
+    // Find common suffix
+    let commonSuffix = '';
+    const reversed = labels.map(l => l.split('').reverse().join(''));
+    const firstRev = reversed[0];
+    for (let i = 0; i < firstRev.length; i++) {
+      const char = firstRev[i];
+      if (reversed.every(l => l[i] === char)) {
+        commonSuffix = char + commonSuffix;
+      } else {
+        break;
+      }
+    }
+
+    // Only use suffix if it starts at a word boundary
+    const suffixMatch = commonSuffix.match(/([\s\-:>].+)$/);
+    commonSuffix = suffixMatch ? suffixMatch[1] : '';
+
+    // Build display names
+    const displayNames = labels.map(label => {
+      let display = label;
+      if (commonPrefix) {
+        display = display.substring(commonPrefix.length);
+      }
+      if (commonSuffix) {
+        display = display.substring(0, display.length - commonSuffix.length);
+      }
+      return display.trim() || label;
+    });
+
+    return {
+      displayNames,
+      commonPrefix: commonPrefix.trim(),
+      commonSuffix: commonSuffix.trim()
+    };
   }
 
   // ============================================================
@@ -367,16 +499,20 @@
       return {
         series: parsedData.seriesByColumn,
         labels: parsedData.rowLabels,
+        displayLabels: parsedData.rowDisplayNames,
         seriesLabel: 'Columns',
-        axisLabel: 'Rows'
+        axisLabel: 'Rows',
+        title: parsedData.columnMetadata.title
       };
     } else {
       // Rows as series, columns as X-axis labels
       return {
         series: parsedData.seriesByRow,
         labels: parsedData.dataColumnHeaders,
+        displayLabels: parsedData.columnDisplayNames,
         seriesLabel: 'Rows',
-        axisLabel: 'Columns'
+        axisLabel: 'Columns',
+        title: parsedData.rowMetadata.prefix || parsedData.rowMetadata.suffix || ''
       };
     }
   }
@@ -542,8 +678,11 @@
     const info = document.getElementById('table-chart-info');
     if (!parsedData) return;
 
+    const metaTitle = parsedData.columnMetadata.title;
+    const metaInfo = metaTitle ? `<strong>${metaTitle}</strong> | ` : '';
+
     info.innerHTML = `
-      <span>Detected: ${parsedData.headerRowCount} header row(s), ${parsedData.labelColumnCount} label column(s), ${parsedData.rowLabels.length} data rows, ${parsedData.dataColumnHeaders.length} data columns</span>
+      <span>${metaInfo}${parsedData.rowLabels.length} rows × ${parsedData.dataColumnHeaders.length} columns</span>
     `;
   }
 
@@ -561,7 +700,8 @@
     view.series.forEach((series, index) => {
       const option = document.createElement('option');
       option.value = index;
-      option.textContent = series.name;
+      // Use displayName (deduplicated) for cleaner UI
+      option.textContent = series.displayName || series.name;
       // Select first few by default, but not too many
       option.selected = index < Math.min(5, view.series.length);
       select.appendChild(option);
@@ -608,15 +748,19 @@
       chartInstance.destroy();
     }
 
+    // Use display labels (deduplicated) for cleaner axis labels
+    const axisLabels = view.displayLabels || view.labels;
+
     // Build datasets
     const datasets = selectedSeries.map((series, idx) => {
       const validData = series.data.map((v, i) => ({
         value: v,
-        label: view.labels[i]
+        label: axisLabels[i]
       })).filter(d => !isNaN(d.value));
 
       return {
-        label: series.name,
+        // Use displayName for legend
+        label: series.displayName || series.name,
         data: isPieType
           ? validData.map(d => d.value)
           : series.data,
@@ -633,13 +777,21 @@
     });
 
     // For pie charts, use the first selected series and filter valid data
-    let labels = view.labels;
+    let labels = axisLabels;
     if (isPieType && selectedSeries.length > 0) {
       const validIndices = selectedSeries[0].data
         .map((v, i) => !isNaN(v) ? i : -1)
         .filter(i => i >= 0);
-      labels = validIndices.map(i => view.labels[i]);
+      labels = validIndices.map(i => axisLabels[i]);
       datasets[0].data = validIndices.map(i => selectedSeries[0].data[i]);
+    }
+
+    // Build chart title from metadata
+    let chartTitle = view.title || '';
+    if (!chartTitle && selectedSeries.length <= 3) {
+      chartTitle = selectedSeries.map(s => s.displayName || s.name).join(', ');
+    } else if (!chartTitle) {
+      chartTitle = `${selectedSeries.length} series selected`;
     }
 
     const chartConfig = {
@@ -658,10 +810,8 @@
             position: isPieType ? 'right' : 'top'
           },
           title: {
-            display: true,
-            text: selectedSeries.length <= 3
-              ? selectedSeries.map(s => s.name).join(', ')
-              : `${selectedSeries.length} series selected`
+            display: !!chartTitle,
+            text: chartTitle
           }
         },
         scales: (isPieType || isRadar) ? {} : {
