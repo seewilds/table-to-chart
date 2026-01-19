@@ -4,6 +4,7 @@ window.TableChart = {
   chartInstance: null,
   parsedData: null,
   viewMode: 'columns',
+  themeMode: 'system',
   isDragging: false,
   dragOffsetX: 0,
   dragOffsetY: 0

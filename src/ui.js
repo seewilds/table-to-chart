@@ -69,6 +69,14 @@ function createModal() {
               </select>
             </div>
             <div class="toolbar-row">
+              <span class="toolbar-label">Theme:</span>
+              <div class="btn-group">
+                <button id="table-chart-theme-system" class="toggle-btn active">Auto</button>
+                <button id="table-chart-theme-light" class="toggle-btn">Light</button>
+                <button id="table-chart-theme-dark" class="toggle-btn">Dark</button>
+              </div>
+            </div>
+            <div class="toolbar-row">
               <span class="toolbar-label toolbar-label-spacer">Palette:</span>
               <button id="table-chart-advanced-toggle" class="toggle-btn">Advanced</button>
             </div>
@@ -99,11 +107,15 @@ function createModal() {
   // Toggle buttons
   TC.modal.querySelector('#table-chart-view-columns').addEventListener('click', () => setViewMode('columns'));
   TC.modal.querySelector('#table-chart-view-rows').addEventListener('click', () => setViewMode('rows'));
+  TC.modal.querySelector('#table-chart-theme-system').addEventListener('click', () => setThemeMode('system'));
+  TC.modal.querySelector('#table-chart-theme-light').addEventListener('click', () => setThemeMode('light'));
+  TC.modal.querySelector('#table-chart-theme-dark').addEventListener('click', () => setThemeMode('dark'));
   TC.modal.querySelector('#table-chart-horizontal').addEventListener('click', toggleOption);
   TC.modal.querySelector('#table-chart-stacked').addEventListener('click', toggleOption);
   TC.modal.querySelector('#table-chart-legend').addEventListener('click', toggleOption);
 
   setAdvancedVisible(false);
+  setThemeMode(TC.themeMode || 'system');
 
   // Drag functionality
   const infoBar = TC.modal.querySelector('.table-chart-info');
@@ -178,6 +190,27 @@ function setViewMode(mode) {
   populateSeriesSelector();
   populateRowSelector();
   updateChart();
+}
+
+function setThemeMode(mode) {
+  TC.themeMode = mode;
+  const container = document.querySelector('.table-chart-container');
+  if (container) {
+    container.classList.remove('theme-light', 'theme-dark');
+    if (mode === 'light') {
+      container.classList.add('theme-light');
+    } else if (mode === 'dark') {
+      container.classList.add('theme-dark');
+    }
+  }
+
+  const systemBtn = document.getElementById('table-chart-theme-system');
+  const lightBtn = document.getElementById('table-chart-theme-light');
+  const darkBtn = document.getElementById('table-chart-theme-dark');
+  if (!systemBtn || !lightBtn || !darkBtn) return;
+  systemBtn.classList.toggle('active', mode === 'system');
+  lightBtn.classList.toggle('active', mode === 'light');
+  darkBtn.classList.toggle('active', mode === 'dark');
 }
 
 function updateViewHint() {

@@ -316,6 +316,141 @@ table.table-chart-highlight {
   }
 }
 
+/* Theme overrides */
+.table-chart-container.theme-light {
+  background: white !important;
+}
+
+.table-chart-container.theme-light .table-chart-info {
+  background: #e8f0fe !important;
+}
+
+.table-chart-container.theme-light .table-chart-info-text {
+  color: #1967d2 !important;
+}
+
+.table-chart-container.theme-light .table-chart-close {
+  color: #666 !important;
+}
+
+.table-chart-container.theme-light .table-chart-close:hover {
+  background: rgba(0,0,0,0.1) !important;
+  color: #333 !important;
+}
+
+.table-chart-container.theme-light .action-btn {
+  background: white !important;
+  border-color: #ccc !important;
+  color: #333 !important;
+}
+
+.table-chart-container.theme-light .action-btn:hover {
+  background: #f0f0f0 !important;
+  border-color: #999 !important;
+}
+
+.table-chart-container.theme-light .table-chart-controls {
+  background: #f8f9fa !important;
+  border-bottom-color: #e0e0e0 !important;
+}
+
+.table-chart-container.theme-light .table-chart-controls select {
+  background: white !important;
+  border-color: #ccc !important;
+  color: #333 !important;
+}
+
+.table-chart-container.theme-light .table-chart-canvas-container {
+  background: #fafafa !important;
+}
+
+.table-chart-container.theme-light .toolbar-label {
+  color: #333 !important;
+}
+
+.table-chart-container.theme-light .toggle-btn {
+  background: white !important;
+  border-color: #ccc !important;
+  color: #333 !important;
+}
+
+.table-chart-container.theme-light .toggle-btn:hover {
+  background: #f0f0f0 !important;
+}
+
+.table-chart-container.theme-light .toggle-btn.active {
+  background: #4285f4 !important;
+  color: white !important;
+  border-color: #4285f4 !important;
+}
+
+.table-chart-container.theme-dark {
+  background: #1e1e1e !important;
+}
+
+.table-chart-container.theme-dark .table-chart-info {
+  background: #2d3748 !important;
+}
+
+.table-chart-container.theme-dark .table-chart-info-text {
+  color: #8ab4f8 !important;
+}
+
+.table-chart-container.theme-dark .table-chart-close {
+  color: #aaa !important;
+}
+
+.table-chart-container.theme-dark .table-chart-close:hover {
+  background: rgba(255,255,255,0.1) !important;
+  color: #fff !important;
+}
+
+.table-chart-container.theme-dark .action-btn {
+  background: #3d3d3d !important;
+  border-color: #505050 !important;
+  color: #ccc !important;
+}
+
+.table-chart-container.theme-dark .action-btn:hover {
+  background: #4d4d4d !important;
+  border-color: #666 !important;
+}
+
+.table-chart-container.theme-dark .table-chart-controls {
+  background: #2d2d2d !important;
+  border-bottom-color: #404040 !important;
+}
+
+.table-chart-container.theme-dark .table-chart-controls select {
+  background: #3d3d3d !important;
+  border-color: #505050 !important;
+  color: #e0e0e0 !important;
+}
+
+.table-chart-container.theme-dark .table-chart-canvas-container {
+  background: #252525 !important;
+}
+
+.table-chart-container.theme-dark .toolbar-label {
+  color: #e0e0e0 !important;
+}
+
+.table-chart-container.theme-dark .toggle-btn {
+  background: #3d3d3d !important;
+  border-color: #505050 !important;
+  color: #ccc !important;
+}
+
+.table-chart-container.theme-dark .toggle-btn:hover {
+  background: #4d4d4d !important;
+}
+
+.table-chart-container.theme-dark .toggle-btn.active {
+  background: #2d5aa0 !important;
+  color: white !important;
+  border-color: #2d5aa0 !important;
+}
+
 /* Responsive adjustments */
 @media (max-width: 600px) {
   .table-chart-container {
