@@ -268,9 +268,9 @@ function getAnnotatedCanvas(originalCanvas) {
   annotatedCanvas.height = originalCanvas.height + extraHeight;
 
   const ctx = annotatedCanvas.getContext('2d');
-  ctx.drawImage(originalCanvas, 0, 0);
   ctx.fillStyle = backgroundColor;
-  ctx.fillRect(0, originalCanvas.height, annotatedCanvas.width, extraHeight);
+  ctx.fillRect(0, 0, annotatedCanvas.width, annotatedCanvas.height);
+  ctx.drawImage(originalCanvas, 0, 0);
   ctx.font = `${fontSize}px sans-serif`;
   ctx.fillStyle = '#000000';
   ctx.textBaseline = 'top';
